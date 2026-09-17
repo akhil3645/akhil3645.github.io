@@ -13,7 +13,7 @@ const definitions = [
     scope: "EMPLOYEE CALCULATION · NUMBER",
     task: "Calculate target achievement",
     challenge:
-      "Try it: change the target to 150,000, then add a cap of 100 using LEAST(formula, 100).",
+      "Try it: change the target to 150,000, then open the C tab, set a cap of 100, and compare. In B, edit the formula directly; in C, use the controlled parts.",
     formula: "net_sales / params.target_amount * 100",
     refs: { net_sales: "NUMBER", "params.target_amount": "NUMBER" },
     inputs: { net_sales: 120000, "params.target_amount": 100000 },
@@ -74,6 +74,11 @@ const defaults = () =>
     fallback: 0,
     aggregate: "SUM",
     status: "Approved",
+    operandA: "net_sales",
+    mathOp: "/",
+    operandB: "params.target_amount",
+    scale: 100,
+    cap: null,
   }));
 let states = defaults(),
   active = 0;
@@ -95,6 +100,11 @@ function validSharedState(s, i) {
     ["SUM", "AVERAGE", "COUNT"].includes(s.aggregate) &&
     ["Approved", "Pending", "Rejected"].includes(s.status) &&
     Number.isFinite(s.fallback) &&
+    ["net_sales", "params.target_amount"].includes(s.operandA) &&
+    ["net_sales", "params.target_amount"].includes(s.operandB) &&
+    ["/", "*", "+", "-"].includes(s.mathOp) &&
+    Number.isFinite(s.scale) &&
+    (s.cap === null || Number.isFinite(s.cap)) &&
     Array.isArray(s.rules) &&
     s.rules.length <= 30 &&
     s.rules.every(
@@ -453,11 +463,10 @@ function formulaEditor(side) {
 }
 function hybridEditor() {
   const s = states[active];
-  if (active === 0)
-    return (
-      formulaEditor("c") +
-      '<p class="help">Same formula editor as B. Arithmetic benefits from compact text in either design.</p>'
-    );
+  if (active === 0) {
+    const refs = Object.keys(definitions[0].refs);
+    return `<p class="help">Build the percentage from parts. Each picker offers only values valid in this context.</p><div class="rule"><label>Value<select data-math="operandA">${refs.map((r) => option(r, r, s.operandA)).join("")}</select></label><label>Operator<select data-math="mathOp">${option("/", "÷ divide", s.mathOp)}${option("*", "× multiply", s.mathOp)}${option("+", "+ add", s.mathOp)}${option("-", "− subtract", s.mathOp)}</select></label><label>By<select data-math="operandB">${refs.map((r) => option(r, r, s.operandB)).join("")}</select></label></div><div class="two-fields"><label>Convert to percent (×)<input type="number" data-math="scale" value="${s.scale}"></label><label>Cap at % — blank means no cap<input type="number" data-math="cap" value="${s.cap ?? ""}"></label></div><p class="help">Compound arithmetic beyond one operation moves to the formula surface. This prototype keeps the parts simple to show the difference.</p>`;
+  }
   if (active === 1)
     return `<label>Match<select id="group">${option("AND", "ALL conditions", s.group)}${option("OR", "ANY condition", s.group)}</select></label><div>${s.rules
       .map(
@@ -479,6 +488,13 @@ function hybridEditor() {
 }
 function syncHybrid() {
   const s = states[active];
+  if (active === 0) {
+    const scale = Number(s.scale);
+    const base = `${s.operandA} ${s.mathOp} ${s.operandB}`;
+    const scaled =
+      Number.isFinite(scale) && scale !== 1 ? `(${base}) * ${scale}` : base;
+    s.c = s.cap === null ? scaled : `LEAST(${scaled}, ${s.cap})`;
+  }
   if (active === 1)
     s.c = s.rules
       .map((r) =>
@@ -570,9 +586,7 @@ function render() {
   $("#workspace-b").innerHTML = formulaEditor("b");
   $("#workspace-c").innerHTML =
     hybridEditor() +
-    (active === 0
-      ? ""
-      : '<div class="code-preview"><strong>Equivalent formula</strong><div id="hybrid-formula"></div></div>');
+    '<div class="code-preview"><strong>Equivalent formula</strong><div id="hybrid-formula"></div></div>';
   refresh();
 }
 document.addEventListener("input", (event) => {
@@ -588,6 +602,12 @@ document.addEventListener("input", (event) => {
   } else if (t.dataset.rate !== undefined) {
     s.rates[+t.dataset.rate][t.dataset.key] =
       t.value === "" ? "" : Number(t.value);
+    syncHybrid();
+  } else if (t.dataset.math !== undefined) {
+    if (t.dataset.math === "scale")
+      s.scale = t.value === "" ? 1 : Number(t.value);
+    else if (t.dataset.math === "cap")
+      s.cap = t.value === "" ? null : Number(t.value);
     syncHybrid();
   } else if (t.id === "fallback") {
     s.fallback = t.value === "" ? "" : Number(t.value);
@@ -616,6 +636,10 @@ document.addEventListener("change", (event) => {
   }
   if (t.dataset.rule !== undefined) {
     s.rules[+t.dataset.rule][t.dataset.key] = t.value;
+    syncHybrid();
+  }
+  if (t.dataset.math !== undefined && t.tagName === "SELECT") {
+    s[t.dataset.math] = t.value;
     syncHybrid();
   }
   refresh();
