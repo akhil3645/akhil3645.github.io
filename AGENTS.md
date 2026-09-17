@@ -1,6 +1,6 @@
 # Agent Instructions — akhil3645.github.io
 
-Static pages site. GitHub is the store, GitHub Pages is the egress. No build step, no frameworks.
+Static pages site. GitHub is the store, GitHub Pages is the egress. No installation or build step. Tailwind Play CDN is supported for styling prototypes.
 
 Live site: https://akhil3645.github.io/
 
@@ -29,10 +29,12 @@ Live site: https://akhil3645.github.io/
 
 ## Conventions
 
-- Plain HTML/CSS/JS only. No frameworks, bundlers, or external CDN dependencies. Pages must keep working indefinitely.
+- Plain HTML/CSS/JS only. No frameworks or bundlers. Tailwind Play CDN is an allowed external dependency for prototypes; pin its version and document it. Other dependencies require an explicit decision.
+- Use Tailwind utilities in HTML/JS and a page-local `<style type="text/tailwindcss">` for theme tokens and components. See README for the starter snippet. No npm install or CSS build is needed.
 - Use images at their original resolution. Never re-encode, resize, or recompress screenshot assets.
 - `pages.js` is the single source of truth for the hub listing. Every published page must have an entry there.
-- Keep pages self-contained: each folder should carry everything it needs.
+- Keep README focused on how the repository works and how to develop/publish pages. Put page-specific descriptions in `pages.js` or the page itself, not README.
+- Keep page-owned assets self-contained with relative paths. Tailwind pages require the documented CDN to load for styling.
 - The repo is public. Never commit credentials, tokens, internal-only material, or content not meant to be shared. Review screenshot content (browser chrome, tabs, bookmarks, emails can be visible) before pushing.
 
 ## Verification

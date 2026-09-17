@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Formula or hybrid? · Incentive builder lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-ink: #182d43;
+        --color-muted: #5b6d80;
+        --color-line: #d7e0e9;
+        --color-formula: #215cbd;
+        --color-hybrid: #08766e;
+        --font-sans: "Segoe UI", Arial, sans-serif;
+        --font-display: Georgia, serif;
+        --font-mono: Consolas, "Courier New", monospace;
+      }
+      @layer base {
+        body {
+          @apply m-0 bg-slate-100 font-sans text-[15px] leading-relaxed text-ink;
+        }
+        h2 {
+          @apply mb-2.5 text-xl font-bold leading-snug;
+        }
+        h3 {
+          @apply mb-2.5 text-base font-bold;
+        }
+        p {
+          @apply mb-2.5 text-muted;
+        }
+        small {
+          @apply text-xs text-muted;
+        }
+        button {
+          @apply cursor-pointer rounded-md border border-line bg-white px-3 py-2 text-[13px] font-semibold text-ink hover:border-formula hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40;
+        }
+        :is(button, a, input, select, textarea, summary):focus-visible {
+          @apply outline-3 outline-offset-3 outline-amber-500;
+        }
+        label {
+          @apply block text-xs font-semibold text-muted;
+        }
+        input,
+        select {
+          @apply mt-1.5 block w-full min-w-0 rounded-md border border-slate-300 bg-white px-2.5 py-2 text-ink;
+        }
+        textarea {
+          @apply mt-2 mb-3.5 block min-h-36 w-full resize-y rounded-lg border border-slate-300 bg-slate-50 p-4 font-mono text-[15px] leading-7 text-ink;
+        }
+        details {
+          @apply border-t border-line px-5 py-3 text-xs;
+        }
+        summary {
+          @apply cursor-pointer font-semibold;
+        }
+        pre {
+          @apply mt-3 max-h-80 overflow-auto font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-all;
+        }
+      }
+      @layer components {
+        .eyebrow {
+          @apply mb-2 font-mono text-[11px] tracking-wider text-muted;
+        }
+        .panel {
+          @apply flex min-w-0 flex-col overflow-hidden rounded-xl border border-line bg-white;
+        }
+        .panel-head {
+          @apply flex items-center gap-3.5 border-b border-line p-5;
+        }
+        .panel-head h2 {
+          @apply mb-1 text-xl;
+        }
+        .panel-head p {
+          @apply m-0 text-[13px];
+        }
+        .letter {
+          @apply grid size-11 shrink-0 place-items-center rounded-lg bg-blue-50 font-display text-[28px] font-semibold text-formula;
+        }
+        .hybrid .letter {
+          @apply bg-emerald-50 text-hybrid;
+        }
+        .workspace {
+          @apply flex-1 p-5 lg:min-h-80;
+        }
+        .picker-row {
+          @apply mb-2.5 flex flex-wrap gap-2;
+        }
+        .picker-row select {
+          @apply m-0 w-full flex-1 text-xs sm:w-40;
+        }
+        .help {
+          @apply my-3 text-xs text-muted;
+        }
+        .outcome {
+          @apply min-h-25 border-t border-line bg-slate-50 px-5 py-4;
+        }
+        .outcome .value {
+          @apply my-1 font-display text-[28px] font-semibold text-ink;
+        }
+        .outcome small {
+          @apply block;
+        }
+        .outcome.error {
+          @apply bg-red-50 text-red-800;
+        }
+        .outcome.error p {
+          @apply text-red-800;
+        }
+        .rule {
+          @apply my-3.5 grid grid-cols-2 items-end gap-2 sm:grid-cols-[1.3fr_1fr_1fr_auto];
+        }
+        .rule button {
+          @apply h-9 w-10 px-2.5 py-1;
+        }
+        .rate {
+          @apply my-3 grid grid-cols-[1fr_1fr_auto] items-end gap-2.5;
+        }
+        .rate button {
+          @apply h-9;
+        }
+        .code-preview {
+          @apply mt-4 rounded-md bg-teal-50 px-3 py-2.5 font-mono text-xs leading-relaxed break-words;
+        }
+        .two-fields {
+          @apply grid gap-3 sm:grid-cols-2;
+        }
+        .data-table {
+          @apply w-full max-w-xl border-collapse text-xs;
+        }
+        .data-table th,
+        .data-table td {
+          @apply border-b border-line px-3 py-1.5 text-left;
+        }
+        .footnotes {
+          @apply mt-9 max-w-4xl text-[13px];
+        }
+        .footnotes a {
+          @apply text-formula underline decoration-blue-200 underline-offset-2 hover:decoration-formula;
+        }
+        .footnotes details {
+          @apply px-0;
+        }
+        .footnotes h2 {
+          @apply text-lg;
+        }
+        .footnotes h3 {
+          @apply mt-5;
+        }
+        .footnotes ul {
+          @apply mb-4 list-disc space-y-1 pl-5;
+        }
+      }
+      @layer utilities {
+        #scenarios button {
+          @apply flex-1 px-3 py-2.5 sm:flex-none sm:px-4;
+        }
+        #scenarios button[aria-pressed="true"] {
+          @apply border-ink bg-ink text-white;
+        }
+        #inputs input {
+          @apply max-w-44;
+        }
+        .show-toast {
+          display: block !important;
+        }
+      }
+    </style>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header
+      class="flex items-center gap-3 border-b border-line bg-white px-4 py-3 sm:gap-6 sm:px-[4vw]"
+    >
+      <a href="../" class="font-bold no-underline">Akhil / Experiments</a>
+      <span
+        class="hidden font-mono text-[11px] tracking-wider text-muted md:block"
+        >INTERACTIVE DESIGN COMPARISON</span
+      >
+      <button id="share" class="ml-auto text-xs">
+        Copy this comparison link
+      </button>
+    </header>
+    <main class="mx-auto max-w-[1440px] px-4 py-7 sm:px-[4vw]">
+      <section
+        class="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center md:gap-10"
+      >
+        <div>
+          <p class="eyebrow">V2 INCENTIVE PROGRAMS · AUTHORING LAB</p>
+          <h1
+            class="my-3 font-display text-4xl leading-[1.08] font-semibold tracking-tight sm:text-[44px]"
+          >
+            Same calculation.<br />Two ways to build it.
+          </h1>
+          <p>
+            Try the formula-first workflow against task-specific controls.<br />Both
+            produce the existing expression JSON. You’re choosing the editing
+            experience.
+          </p>
+        </div>
+        <aside class="border-l-3 border-hybrid px-5 py-3 md:max-w-72">
+          <strong>A fair comparison</strong>
+          <p>Same sample data. Independent edits. Live results.</p>
+          <small
+            >Fictional monthly sales program · Browser-only prototype · No
+            production data or API calls</small
+          >
+        </aside>
+      </section>
+      <nav
+        id="scenarios"
+        aria-label="Choose a calculation"
+        class="flex flex-wrap gap-2 border-b border-line pb-4"
+      ></nav>
+      <section
+        class="my-5 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center"
+      >
+        <div>
+          <p class="eyebrow" id="scope"></p>
+          <h2 id="task"></h2>
+          <p id="challenge"></p>
+        </div>
+        <button id="reset" class="shrink-0">Reset this example</button>
+      </section>
+      <section
+        class="flex flex-col items-start gap-3 rounded-xl bg-slate-200/70 px-5 py-4 md:flex-row md:items-center md:gap-7"
+      >
+        <div class="min-w-40">
+          <strong>Shared sample inputs</strong>
+          <p class="m-0 text-xs">Change these to test both options.</p>
+        </div>
+        <div id="inputs" class="flex flex-wrap gap-4"></div>
+      </section>
+      <div id="dataset" class="my-3"></div>
+      <section class="mt-5 grid items-stretch gap-5 lg:grid-cols-2">
+        <article class="panel formula">
+          <div class="panel-head">
+            <span class="letter">B</span>
+            <div>
+              <h2>Assisted formula editor</h2>
+              <p>One formula surface for every task.</p>
+            </div>
+          </div>
+          <div class="workspace" id="workspace-b"></div>
+          <div class="outcome" id="outcome-b" aria-live="polite"></div>
+          <details>
+            <summary>Inspect generated V2 expression</summary>
+            <pre id="json-b"></pre>
+          </details>
+        </article>
+        <article class="panel hybrid">
+          <div class="panel-head">
+            <span class="letter">C</span>
+            <div>
+              <h2>Task-specific hybrid</h2>
+              <p>The editor changes to fit the calculation.</p>
+            </div>
+          </div>
+          <div class="workspace" id="workspace-c"></div>
+          <div class="outcome" id="outcome-c" aria-live="polite"></div>
+          <details>
+            <summary>Inspect generated V2 expression</summary>
+            <pre id="json-c"></pre>
+          </details>
+        </article>
+      </section>
+      <div
+        id="match"
+        class="mt-4 mb-7 min-h-6 text-center text-[13px] text-hybrid"
+        role="status"
+      ></div>
+      <section class="rounded-xl border border-line bg-white p-6">
+        <h2>Which feels easier to operate?</h2>
+        <div class="my-5 grid gap-4 sm:grid-cols-2 sm:gap-8">
+          <div>
+            <h3>Choose B if…</h3>
+            <p>
+              You think in spreadsheet formulas, want one consistent editor, and
+              prefer typing over opening controls. Longer conditions mean more
+              nesting.
+            </p>
+          </div>
+          <div>
+            <h3>Choose C if…</h3>
+            <p>
+              You want conditions and conditional rates laid out explicitly.
+              Arithmetic still uses formulas; other tasks require more controls
+              and screen space.
+            </p>
+          </div>
+        </div>
+        <p class="text-xs">
+          Try all four tasks before deciding. Achievement intentionally looks
+          the same in both: hybrid does not replace a good arithmetic editor.
+        </p>
+      </section>
+      <section class="footnotes">
+        <h2>What this demo does—and doesn’t do</h2>
+        <p>
+          A small parser compiles the supported formulas into V2-shaped
+          expressions without executing JavaScript from the editor. The browser
+          evaluates fictional inputs. These previews are
+          <strong>not verified by the backend</strong>; this is not the complete
+          V2 validator or numeric runtime.
+        </p>
+        <p>
+          <code>SUM_WHERE(value, condition)</code> is demo authoring shorthand
+          for an aggregate with a <code>filter</code>, not a new V2 operation.
+          Conditions support one ALL/ANY group here. Formula mode supports
+          nested expressions. Invalid edits never replace the output with stale
+          JSON.
+        </p>
+        <details>
+          <summary>Supported formula syntax</summary>
+          <p>
+            References shown in each picker; numbers, quoted text and
+            TRUE/FALSE; + − * /; =, !=, &lt;, &gt;, &lt;=, &gt;=; AND/OR;
+            parentheses; CASE(condition, result, …, fallback), COALESCE,
+            GREATEST, LEAST; SUM, AVERAGE, COUNT(field), SUM_WHERE,
+            AVERAGE_WHERE, COUNT_WHERE. The *_WHERE helpers compile to an
+            aggregate with a filter. CASE uses first-match order. Division by
+            zero returns null.
+          </p>
+        </details>
+        <h3>Research behind the interaction patterns</h3>
+        <ul>
+          <li>
+            <a
+              href="https://trailhead.salesforce.com/content/learn/modules/quick-data-insights-with-formulas/get-started-with-formulas"
+              >Salesforce: insert fields, operators, functions and check
+              syntax</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://learn.microsoft.com/en-us/power-apps/maker/data-platform/define-calculated-fields"
+              >Dynamics / Dataverse: condition and action editor</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://learn.microsoft.com/en-us/power-apps/maker/data-platform/formula-columns"
+              >Power Fx: formula columns with IntelliSense</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://trailhead.salesforce.com/content/learn/modules/salesforce-spiff-tier-payout-rules/get-started-with-tier-payouts"
+              >Spiff: range tables and tier payouts</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.metabase.com/docs/latest/questions/query-builder/summarizing-and-grouping"
+              >Metabase: guided summaries and custom expressions</a
+            >
+          </li>
+        </ul>
+        <p>
+          UI study, not a copy of any vendor’s product. Conditional rates here
+          are first-match CASE results, not marginal/tax-bracket payouts. Shared
+          links include your current demo edits and inputs.
+        </p>
+      </section>
+    </main>
+    <div
+      id="toast"
+      role="status"
+      class="fixed bottom-5 left-1/2 hidden max-w-[90vw] -translate-x-1/2 rounded-lg bg-ink px-5 py-3 text-white shadow-lg"
+    ></div>
+  </body>
+</html>
