@@ -7,7 +7,7 @@ const PAGES = [
   },
   {
     title: "Incentive Builder: Formula vs Hybrid",
-    desc: "Interactive comparison · Edit achievement, eligibility, conditional rates and approved-sales calculations on shared sample data.",
+    desc: "Interactive comparison · formula editor with insertable fields, functions and syntax checking vs guided builders for eligibility, rates and aggregates.",
     url: "incentive-builder-comparison/",
     date: "Sep 17, 2026",
   },

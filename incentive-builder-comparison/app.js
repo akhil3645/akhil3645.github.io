@@ -7,60 +7,175 @@ const escapeHtml = (value) =>
         c
       ],
   );
+
 const definitions = [
   {
     name: "Achievement",
-    scope: "EMPLOYEE CALCULATION · NUMBER",
-    task: "Calculate target achievement",
-    challenge:
-      "Try it: change the target to 150,000, then open the C tab, set a cap of 100, and compare. In B, edit the formula directly; in C, use the controlled parts.",
     formula: "net_sales / params.target_amount * 100",
-    refs: { net_sales: "NUMBER", "params.target_amount": "NUMBER" },
-    inputs: { net_sales: 120000, "params.target_amount": 100000 },
+    refs: [
+      { key: "net_sales", type: "NUMBER", group: "Selections" },
+      { key: "params.target_amount", type: "NUMBER", group: "Parameters" },
+    ],
+    functions: [
+      {
+        label: "COALESCE(number, number)",
+        insert: "COALESCE(net_sales, 0)",
+        hint: "First value that is not null",
+      },
+      {
+        label: "LEAST(number, number)",
+        insert: "LEAST(net_sales / params.target_amount * 100, 100)",
+        hint: "Smallest value",
+      },
+      {
+        label: "GREATEST(number, number)",
+        insert: "GREATEST(net_sales, 0)",
+        hint: "Largest value",
+      },
+      {
+        label: "ABS(number)",
+        insert: "ABS(net_sales - params.target_amount)",
+        hint: "Absolute value",
+      },
+      {
+        label: "CASE(condition, result, …, fallback)",
+        insert: "CASE(net_sales >= params.target_amount, 1, 0)",
+        hint: "First matching condition wins",
+      },
+    ],
+    sample: [
+      ["net_sales", 120000],
+      ["params.target_amount", 100000],
+    ],
   },
   {
     name: "Eligibility",
-    scope: "EMPLOYEES FILTER · BOOLEAN",
-    task: "Include active employees in Sales",
-    challenge:
-      "Try it: include Marketing as well as Sales, while still requiring Active status. In B, add a parenthesized OR; in C, choose ‘is one of’ and enter Sales, Marketing.",
     formula: 'emp.department = "Sales" AND emp.status = "Active"',
-    refs: { "emp.department": "TEXT", "emp.status": "TEXT" },
-    inputs: { "emp.department": "Sales", "emp.status": "Active" },
+    refs: [
+      { key: "emp.department", type: "TEXT", group: "Employee" },
+      { key: "emp.status", type: "TEXT", group: "Employee" },
+    ],
+    functions: [
+      {
+        label: "AND(condition, condition)",
+        insert: 'AND(emp.department = "Sales", emp.status = "Active")',
+        hint: "True when every condition is true",
+      },
+      {
+        label: "OR(condition, condition)",
+        insert: 'OR(emp.department = "Sales", emp.department = "Marketing")',
+        hint: "True when any condition is true",
+      },
+      {
+        label: "NOT(condition)",
+        insert: 'NOT(emp.status = "Active")',
+        hint: "Inverts a condition",
+      },
+    ],
+    sample: [
+      ["emp.department", "Sales"],
+      ["emp.status", "Active"],
+    ],
   },
   {
     name: "Conditional rate",
-    scope: "EMPLOYEE CALCULATION · NUMBER",
-    task: "Choose a commission rate by achievement",
-    challenge:
-      "Try it: change the top threshold from 120 to 130. First matching condition wins; the rate applies to the full amount, not marginal bands.",
     formula:
       "CASE(achievement >= 120, 0.08,\n     achievement >= 100, 0.05,\n     achievement >= 80, 0.02, 0)",
-    refs: { achievement: "NUMBER" },
-    inputs: { achievement: 125 },
+    refs: [{ key: "achievement", type: "NUMBER", group: "Selections" }],
+    functions: [
+      {
+        label: "CASE(condition, result, …, fallback)",
+        insert:
+          "CASE(achievement >= 120, 0.08, achievement >= 100, 0.05, achievement >= 80, 0.02, 0)",
+        hint: "First matching condition wins",
+      },
+      {
+        label: "COALESCE(number, number)",
+        insert: "COALESCE(achievement, 0)",
+        hint: "First value that is not null",
+      },
+      {
+        label: "LEAST(number, number)",
+        insert: "LEAST(achievement, 100)",
+        hint: "Smallest value",
+      },
+      {
+        label: "GREATEST(number, number)",
+        insert: "GREATEST(achievement, 0)",
+        hint: "Largest value",
+      },
+    ],
+    sample: [["achievement", 125]],
   },
   {
     name: "Approved sales",
-    scope: "AGGREGATION SELECTION · NUMBER",
-    task: "Sum only approved sales",
-    challenge:
-      "Try it: compare Approved with Pending sales, then change SUM to AVERAGE. Both editors operate over the same four fictional rows.",
     formula: 'SUM_WHERE(sales.amount, sales.status = "Approved")',
-    refs: { "sales.amount": "NUMBER", "sales.status": "TEXT" },
-    inputs: {},
+    refs: [
+      { key: "sales.amount", type: "NUMBER", group: "Source data" },
+      { key: "sales.status", type: "TEXT", group: "Source data" },
+    ],
+    functions: [
+      {
+        label: "SUM(field)",
+        insert: "SUM(sales.amount)",
+        hint: "Totals the field over all rows",
+      },
+      {
+        label: "AVERAGE(field)",
+        insert: "AVERAGE(sales.amount)",
+        hint: "Averages the field over all rows",
+      },
+      {
+        label: "COUNT(field)",
+        insert: "COUNT(sales.amount)",
+        hint: "Counts rows where the field is not null",
+      },
+      {
+        label: "SUM_WHERE(field, condition)",
+        insert: 'SUM_WHERE(sales.amount, sales.status = "Approved")',
+        hint: "Totals only rows that match the condition",
+      },
+      {
+        label: "AVERAGE_WHERE(field, condition)",
+        insert: 'AVERAGE_WHERE(sales.amount, sales.status = "Approved")',
+        hint: "Averages only rows that match the condition",
+      },
+      {
+        label: "COUNT_WHERE(field, condition)",
+        insert: 'COUNT_WHERE(sales.amount, sales.status = "Approved")',
+        hint: "Counts only rows that match the condition",
+      },
+    ],
+    sample: [],
   },
 ];
+
+const operators = [
+  [" + ", "+ add"],
+  [" - ", "− subtract"],
+  [" * ", "× multiply"],
+  [" / ", "÷ divide"],
+  [" = ", "= equals"],
+  [" != ", "≠ does not equal"],
+  [" < ", "< less than"],
+  [" <= ", "≤ less than or equal"],
+  [" > ", "> greater than"],
+  [" >= ", "≥ greater than or equal"],
+  [" AND ", "AND"],
+  [" OR ", "OR"],
+];
+
 const rows = [
   { amount: 60000, status: "Approved" },
   { amount: 40000, status: "Approved" },
   { amount: 15000, status: "Pending" },
   { amount: 5000, status: "Rejected" },
 ];
+
 const defaults = () =>
-  definitions.map((d, i) => ({
+  definitions.map((d) => ({
     b: d.formula,
     c: d.formula,
-    inputs: { ...d.inputs },
     group: "AND",
     rules: [
       { field: "emp.department", operator: "=", value: "Sales" },
@@ -80,22 +195,16 @@ const defaults = () =>
     scale: 100,
     cap: null,
   }));
+
 let states = defaults(),
   active = 0;
+
 function validSharedState(s, i) {
   return (
     typeof s.b === "string" &&
     s.b.length <= 5000 &&
     typeof s.c === "string" &&
     s.c.length <= 5000 &&
-    s.inputs &&
-    Object.keys(s.inputs).length ===
-      Object.keys(definitions[i].inputs).length &&
-    Object.entries(definitions[i].inputs).every(
-      ([key, value]) =>
-        typeof s.inputs[key] === typeof value &&
-        (typeof value !== "number" || Number.isFinite(s.inputs[key])),
-    ) &&
     ["AND", "OR"].includes(s.group) &&
     ["SUM", "AVERAGE", "COUNT"].includes(s.aggregate) &&
     ["Approved", "Pending", "Rejected"].includes(s.status) &&
@@ -120,11 +229,12 @@ function validSharedState(s, i) {
     )
   );
 }
+
 try {
   if (location.hash) {
     const saved = JSON.parse(decodeURIComponent(location.hash.slice(1)));
     if (
-      saved.version === 1 &&
+      saved.version === 2 &&
       Array.isArray(saved.states) &&
       saved.states.length === 4 &&
       Number.isInteger(saved.active) &&
@@ -140,6 +250,10 @@ try {
   states = defaults();
   active = 0;
 }
+
+const definition = () => definitions[active];
+const refByKey = () =>
+  Object.fromEntries(definition().refs.map((r) => [r.key, r]));
 const operation = (name, ...operands) => ({
   type: "OPERATION",
   operation: name,
@@ -155,10 +269,19 @@ const constant = (value) => ({
         : "TEXT",
   constantValue: value,
 });
-function reference(name) {
-  if (!(name in definitions[active].refs))
-    throw Error(
-      `Unknown reference “${name}”. Choose one from Insert reference.`,
+const formulaError = (message, start, end) => {
+  const error = new Error(message);
+  error.start = start;
+  error.end = end ?? start;
+  return error;
+};
+
+function reference(name, token) {
+  if (!(name in refByKey()))
+    throw formulaError(
+      `Unknown reference “${name}”. Choose one from References.`,
+      token ? token.start : 0,
+      token ? token.start + token.text.length : undefined,
     );
   if (name.startsWith("params."))
     return {
@@ -172,6 +295,7 @@ function reference(name) {
   }
   return { type: "SELECTION", selectionAlias: name };
 }
+
 const binary = {
   OR: [1, "OR"],
   AND: [2, "AND"],
@@ -186,9 +310,10 @@ const binary = {
   "*": [5, "MULTIPLY"],
   "/": [5, "DIVIDE"],
 };
+
 function compile(text) {
   if (text.length > 5000)
-    throw Error("Keep demo formulas under 5,000 characters.");
+    throw formulaError("Keep formulas under 5,000 characters.", 0, text.length);
   const tokens = [];
   let offset = 0;
   while (offset < text.length) {
@@ -201,46 +326,60 @@ function compile(text) {
         text.slice(offset),
       );
     if (!match)
-      throw Error(
-        `Unexpected character at position ${offset + 1}. Use double quotes for text.`,
+      throw formulaError(
+        `Unexpected character “${text[offset]}”. Use double quotes for text.`,
+        offset,
+        offset + 1,
       );
-    tokens.push(match[0]);
+    tokens.push({ text: match[0], start: offset });
     offset += match[0].length;
   }
   let cursor = 0,
     depth = 0;
+  const at = () => tokens[cursor];
+  const errorAt = (message, token) =>
+    formulaError(
+      message,
+      token ? token.start : text.length,
+      token ? token.start + token.text.length : text.length,
+    );
   function expression(min = 0) {
-    if (++depth > 60) throw Error("Formula is too deeply nested.");
+    if (++depth > 60) throw errorAt("Formula is too deeply nested.");
     let left;
-    const token = tokens[cursor++];
-    if (!token) throw Error("Expected a value or reference.");
-    if (token === "(") {
+    const token = at();
+    cursor++;
+    if (!token) throw errorAt("Expected a value or reference.");
+    if (token.text === "(") {
       left = expression();
-      if (tokens[cursor++] !== ")") throw Error("Missing closing parenthesis.");
-    } else if (token === "-")
+      if (at()?.text !== ")")
+        throw errorAt("Missing closing parenthesis.", at());
+      cursor++;
+    } else if (token.text === "-")
       left = operation("SUBTRACT", constant(0), expression(6));
-    else if (/^\d/.test(token)) left = constant(Number(token));
-    else if (token[0] === '"') {
+    else if (/^\d/.test(token.text)) left = constant(Number(token.text));
+    else if (token.text[0] === '"') {
       try {
-        left = constant(JSON.parse(token));
+        left = constant(JSON.parse(token.text));
       } catch {
-        throw Error("Invalid quoted text.");
+        throw errorAt("Invalid quoted text.", token);
       }
-    } else if (/^(TRUE|FALSE)$/i.test(token))
-      left = constant(token.toUpperCase() === "TRUE");
-    else if (tokens[cursor] === "(") {
+    } else if (/^(TRUE|FALSE)$/i.test(token.text))
+      left = constant(token.text.toUpperCase() === "TRUE");
+    else if (at()?.text === "(") {
       cursor++;
       const args = [];
-      if (tokens[cursor] !== ")") {
+      if (at()?.text !== ")") {
         do {
           args.push(expression());
-          if (tokens[cursor] !== ",") break;
+          if (at()?.text !== ",") break;
           cursor++;
         } while (true);
       }
-      if (tokens[cursor++] !== ")")
-        throw Error("Expected a comma or closing parenthesis.");
-      const fn = token.toUpperCase();
+      const close = at();
+      if (close?.text !== ")")
+        throw errorAt("Expected a comma or closing parenthesis.", close);
+      cursor++;
+      const fn = token.text.toUpperCase();
       const signatures = {
         CASE: [3, 99],
         COALESCE: [2, 99],
@@ -252,10 +391,15 @@ function compile(text) {
         SUM_WHERE: [2, 2],
         AVERAGE_WHERE: [2, 2],
         COUNT_WHERE: [2, 2],
+        AND: [2, 99],
+        OR: [2, 99],
+        NOT: [1, 1],
+        ABS: [1, 1],
       };
       if (!signatures[fn])
-        throw Error(
-          `Unsupported demo function ${token}. Use the function picker.`,
+        throw errorAt(
+          `Unsupported function ${token.text}. Pick one from Functions.`,
+          token,
         );
       const [min, max] = signatures[fn];
       if (
@@ -263,15 +407,16 @@ function compile(text) {
         args.length > max ||
         (fn === "CASE" && args.length % 2 !== 1)
       )
-        throw Error(
+        throw errorAt(
           `${fn}: check the number of arguments${fn === "CASE" ? " (condition/result pairs, then fallback)" : ""}.`,
+          token,
         );
       left = fn.endsWith("_WHERE")
         ? { ...operation(fn.replace("_WHERE", ""), args[0]), filter: args[1] }
         : operation(fn, ...args);
-    } else left = reference(token);
+    } else left = reference(token.text, token);
     while (cursor < tokens.length) {
-      const spec = binary[tokens[cursor].toUpperCase()];
+      const spec = binary[at().text.toUpperCase()];
       if (!spec || spec[0] < min) break;
       cursor++;
       left = operation(spec[1], left, expression(spec[0] + 1));
@@ -281,17 +426,21 @@ function compile(text) {
   }
   const result = expression();
   if (cursor !== tokens.length)
-    throw Error(
-      `Unexpected “${tokens[cursor]}”. Add an operator between values.`,
+    throw errorAt(
+      `Unexpected “${at().text}”. Add an operator between values.`,
+      at(),
     );
   const type = checkType(result);
   const expected = active === 1 ? "BOOLEAN" : "NUMBER";
   if (type !== expected)
-    throw Error(
+    throw formulaError(
       `This context needs ${expected.toLowerCase()}, but the expression returns ${type.toLowerCase()}.`,
+      0,
+      text.length,
     );
   return result;
 }
+
 function checkType(node, insideAggregate = false) {
   if (node.type === "CONSTANT") return node.constantType;
   if (node.type !== "OPERATION") {
@@ -300,12 +449,12 @@ function checkType(node, insideAggregate = false) {
       (node.type === "VARIABLE"
         ? "params." + node.variableAlias
         : node.sourceAlias + "." + node.sourceField);
-    return definitions[active].refs[key];
+    return refByKey()[key].type;
   }
-  const op = node.operation,
-    aggregate = ["SUM", "AVERAGE", "COUNT"].includes(op);
+  const op = node.operation;
+  const aggregate = ["SUM", "AVERAGE", "COUNT"].includes(op);
   if (aggregate && (active !== 3 || insideAggregate))
-    throw Error(
+    throw new Error(
       "Aggregates are only available in Approved sales and cannot be nested.",
     );
   const types = node.operands.map((n) =>
@@ -313,24 +462,32 @@ function checkType(node, insideAggregate = false) {
   );
   const need = (t) => {
     if (types.some((x) => x !== t))
-      throw Error(`${op} expects ${t.toLowerCase()} operands.`);
+      throw new Error(`${op} expects ${t.toLowerCase()} operands.`);
   };
   if (node.filter && checkType(node.filter, true) !== "BOOLEAN")
-    throw Error("Aggregate filter must return boolean.");
+    throw new Error("Aggregate filter must return boolean.");
   if (op === "CASE") {
     for (let i = 0; i < types.length - 1; i += 2)
       if (types[i] !== "BOOLEAN")
-        throw Error("CASE conditions must be boolean.");
+        throw new Error("CASE conditions must be boolean.");
     const values = types.filter(
       (_, i) => i % 2 === 1 || i === types.length - 1,
     );
     if (new Set(values).size !== 1)
-      throw Error("CASE results must have the same type.");
+      throw new Error("CASE results must have the same type.");
     return values[0];
   }
   if (["AND", "OR"].includes(op)) {
     need("BOOLEAN");
     return "BOOLEAN";
+  }
+  if (op === "NOT") {
+    need("BOOLEAN");
+    return "BOOLEAN";
+  }
+  if (op === "ABS") {
+    need("NUMBER");
+    return "NUMBER";
   }
   if (
     [
@@ -342,19 +499,21 @@ function checkType(node, insideAggregate = false) {
       "LESS_THAN_OR_EQUALS",
     ].includes(op)
   ) {
-    if (types[0] !== types[1]) throw Error("Compare values of the same type.");
+    if (types[0] !== types[1])
+      throw new Error("Compare values of the same type.");
     return "BOOLEAN";
   }
   if (op === "COUNT") return "NUMBER";
   if (op === "COALESCE") {
     if (new Set(types).size !== 1)
-      throw Error("COALESCE values must have the same type.");
+      throw new Error("COALESCE values must have the same type.");
     return types[0];
   }
   need("NUMBER");
   return "NUMBER";
 }
-function evaluate(node, inputs) {
+
+function evaluate(node, sample) {
   if (node.type === "CONSTANT") return node.constantValue;
   if (node.type !== "OPERATION") {
     const key =
@@ -362,11 +521,8 @@ function evaluate(node, inputs) {
       (node.type === "VARIABLE"
         ? "params." + node.variableAlias
         : node.sourceAlias + "." + node.sourceField);
-    if (!(key in inputs))
-      throw Error(
-        `“${key}” needs an aggregate here; it represents multiple sample rows.`,
-      );
-    return inputs[key];
+    if (!(key in sample)) throw new Error(`“${key}” needs an aggregate here.`);
+    return sample[key];
   }
   const op = node.operation,
     args = node.operands;
@@ -388,17 +544,19 @@ function evaluate(node, inputs) {
   }
   if (op === "CASE") {
     for (let i = 0; i < args.length - 1; i += 2)
-      if (evaluate(args[i], inputs) === true)
-        return evaluate(args[i + 1], inputs);
-    return evaluate(args.at(-1), inputs);
+      if (evaluate(args[i], sample) === true)
+        return evaluate(args[i + 1], sample);
+    return evaluate(args.at(-1), sample);
   }
-  const values = args.map((n) => evaluate(n, inputs)),
+  const values = args.map((n) => evaluate(n, sample)),
     [a, b] = values;
   if (op === "COALESCE") return values.find((v) => v !== null) ?? null;
   if (op === "AND")
     return values.includes(false) ? false : values.includes(null) ? null : true;
   if (op === "OR")
     return values.includes(true) ? true : values.includes(null) ? null : false;
+  if (op === "NOT") return values[0] === null ? null : !values[0];
+  if (op === "ABS") return Math.abs(a);
   if (op === "GREATEST" || op === "LEAST") {
     const nonnull = values.filter((v) => v !== null);
     return nonnull.length
@@ -431,61 +589,180 @@ function evaluate(node, inputs) {
       return a <= b;
   }
 }
-const option = (v, label, selected) =>
-  `<option value="${escapeHtml(v)}" ${v === selected ? "selected" : ""}>${escapeHtml(label ?? v)}</option>`;
-function formulaEditor(side) {
-  const refs = Object.keys(definitions[active].refs);
-  const functions =
-    active === 3
-      ? [
-          "SUM(sales.amount)",
-          "AVERAGE(sales.amount)",
-          'SUM_WHERE(sales.amount, sales.status = "Approved")',
-          'AVERAGE_WHERE(sales.amount, sales.status = "Approved")',
-          'COUNT_WHERE(sales.amount, sales.status = "Approved")',
-        ]
-      : active === 1
-        ? ['emp.department = "Sales"', 'emp.status = "Active"']
-        : [
-            "LEAST(achievement, 100)",
-            "COALESCE(net_sales, 0)",
-            "CASE(achievement >= 100, 0.05, 0)",
-          ];
-  const valid = functions.filter(
-    (f) =>
-      !["achievement", "net_sales"].some(
-        (r) => f.includes(r) && !refs.includes(r),
-      ),
-  );
-  if (active === 0)
-    valid.push("LEAST(net_sales / params.target_amount * 100, 100)");
-  return `<label for="formula-${side}">Formula · ${active === 1 ? "boolean" : "number"}</label><textarea id="formula-${side}" spellcheck="false">${escapeHtml(states[active][side])}</textarea><div class="picker-row"><select aria-label="Insert reference in ${side.toUpperCase()}" data-insert="${side}">${option("", "Insert reference…")}${refs.map((r) => option(r, r)).join("")}</select><select aria-label="Insert function in ${side.toUpperCase()}" data-insert="${side}">${option("", "Insert function template…")}${valid.map((f) => option(f, f)).join("")}</select></div><p class="help">Select text to replace it, or place the cursor before inserting. Templates contain editable sample arguments. Preview updates as you type.</p>`;
+
+const option = (value, label, selected) =>
+  `<option value="${escapeHtml(value)}" ${value === selected ? "selected" : ""}>${escapeHtml(label ?? value)}</option>`;
+
+function referenceOptions() {
+  const groups = new Map();
+  definition().refs.forEach((r) => {
+    if (!groups.has(r.group)) groups.set(r.group, []);
+    groups.get(r.group).push(r);
+  });
+  return `<option value="">Insert reference…</option>${[...groups]
+    .map(
+      ([label, refs]) =>
+        `<optgroup label="${escapeHtml(label)}">${refs
+          .map((r) => option(r.key, `${r.key} · ${r.type.toLowerCase()}`))
+          .join("")}</optgroup>`,
+    )
+    .join("")}`;
 }
-function hybridEditor() {
-  const s = states[active];
-  if (active === 0) {
-    const refs = Object.keys(definitions[0].refs);
-    return `<p class="help">Build the percentage from parts. Each picker offers only values valid in this context.</p><div class="rule"><label>Value<select data-math="operandA">${refs.map((r) => option(r, r, s.operandA)).join("")}</select></label><label>Operator<select data-math="mathOp">${option("/", "÷ divide", s.mathOp)}${option("*", "× multiply", s.mathOp)}${option("+", "+ add", s.mathOp)}${option("-", "− subtract", s.mathOp)}</select></label><label>By<select data-math="operandB">${refs.map((r) => option(r, r, s.operandB)).join("")}</select></label></div><div class="two-fields"><label>Convert to percent (×)<input type="number" data-math="scale" value="${s.scale}"></label><label>Cap at % — blank means no cap<input type="number" data-math="cap" value="${s.cap ?? ""}"></label></div><p class="help">Compound arithmetic beyond one operation moves to the formula surface. This prototype keeps the parts simple to show the difference.</p>`;
+function operatorOptions() {
+  return `<option value="">Insert operator…</option>${operators
+    .map(([insert, label]) => option(insert, label))
+    .join("")}`;
+}
+function functionOptions() {
+  return `<option value="">Functions…</option>${definition()
+    .functions.map(
+      (f) =>
+        `<option value="${escapeHtml(f.insert)}" title="${escapeHtml(f.hint)}">${escapeHtml(f.label)}</option>`,
+    )
+    .join("")}`;
+}
+
+function highlightFormula(text) {
+  const parts = [];
+  let last = 0,
+    match;
+  const pattern =
+    /(?:"(?:[^"\\]|\\.)*"|\b(?:AND|OR|NOT|TRUE|FALSE|NULL)\b|[A-Za-z_][\w.]*|\d+(?:\.\d+)?|>=|<=|!=|[(),+\-*/%<>=!])/g;
+  while ((match = pattern.exec(text))) {
+    if (match.index > last)
+      parts.push(escapeHtml(text.slice(last, match.index)));
+    const t = match[0];
+    let cls = "tok-op";
+    if (t[0] === '"') cls = "tok-string";
+    else if (/^(AND|OR|NOT|TRUE|FALSE|NULL)$/i.test(t)) cls = "tok-key";
+    else if (/^\d/.test(t)) cls = "tok-num";
+    else if (/^[A-Za-z_]/.test(t))
+      cls = /^\s*\(/.test(text.slice(match.index + t.length))
+        ? "tok-fn"
+        : "tok-ref";
+    parts.push(`<span class="${cls}">${escapeHtml(t)}</span>`);
+    last = match.index + t.length;
   }
-  if (active === 1)
-    return `<label>Match<select id="group">${option("AND", "ALL conditions", s.group)}${option("OR", "ANY condition", s.group)}</select></label><div>${s.rules
-      .map(
-        (r, i) =>
-          `<div class="rule"><label>Field<select data-rule="${i}" data-key="field">${Object.keys(
-            definitions[1].refs,
-          )
-            .map((f) => option(f, f, r.field))
-            .join(
-              "",
-            )}</select></label><label>Operator<select data-rule="${i}" data-key="operator">${option("=", "equals", r.operator)}${option("!=", "does not equal", r.operator)}${option("ANY_OF", "is one of", r.operator)}</select></label><label>Value<input data-rule="${i}" data-key="value" value="${escapeHtml(r.value)}"></label><button data-remove-rule="${i}" aria-label="Remove condition ${i + 1}">×</button></div>`,
-      )
-      .join(
-        "",
-      )}</div><button id="add-rule">+ Add condition</button><p class="help">For “is one of”, separate text values with commas. This prototype supports one ALL/ANY group with per-field lists; arbitrary nested groups would need additional controls.</p>`;
-  if (active === 2)
-    return `<p class="help">First matching condition wins. Reorder rows with ↑; the result is a single rate, not a marginal payout.</p>${s.rates.map((r, i) => `<div class="rate"><label>Achievement ≥<input type="number" data-rate="${i}" data-key="threshold" value="${r.threshold}"></label><label>Return rate (decimal)<input type="number" step="0.01" data-rate="${i}" data-key="rate" value="${r.rate}"></label><div><button data-up="${i}" aria-label="Move rate ${i + 1} up" ${i === 0 ? "disabled" : ""}>↑</button><button data-remove-rate="${i}" aria-label="Remove rate ${i + 1}">×</button></div></div>`).join("")}<label>Otherwise<input id="fallback" type="number" step="0.01" value="${s.fallback}"></label><button id="add-rate" style="margin-top:12px">+ Add condition / rate</button>`;
-  return `<div class="two-fields"><label>Operation<select id="aggregate">${["SUM", "AVERAGE", "COUNT"].map((v) => option(v, v, s.aggregate)).join("")}</select></label><label>Value<select aria-label="Aggregation value"><option>sales.amount</option></select></label></div><h3 style="margin-top:22px">Filter included rows</h3><label>sales.status equals<select id="status">${["Approved", "Pending", "Rejected"].map((v) => option(v, v, s.status)).join("")}</select></label><p class="help">The filter belongs to the aggregate expression. Grouping, if needed, is configured on the surrounding transformation.</p>`;
+  if (last < text.length) parts.push(escapeHtml(text.slice(last)));
+  return parts.join("") + "\n";
 }
+
+function syncHighlight() {
+  $("#highlight-b").innerHTML = highlightFormula(states[active].b);
+  $("#highlight-b").scrollTop = $("#formula-b").scrollTop;
+}
+
+function selectFirstArgument(textarea, insertedAt) {
+  const text = textarea.value;
+  const open = text.indexOf("(", insertedAt);
+  if (open < 0) return;
+  let depth = 0,
+    end = -1;
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === "(") depth++;
+    else if (text[i] === ")") {
+      depth--;
+      if (depth === 0) {
+        end = i;
+        break;
+      }
+    } else if (text[i] === "," && depth === 1) {
+      end = i;
+      break;
+    }
+  }
+  if (end > open) textarea.setSelectionRange(open + 1, end);
+}
+
+const formatNumber = (value) =>
+  new Intl.NumberFormat("en-IN", { maximumFractionDigits: 4 }).format(value);
+
+function sampleSummary() {
+  const d = definition();
+  if (!d.sample.length)
+    return `4 sample rows · status = ${states[active].status}`;
+  return d.sample
+    .map(
+      ([key, value]) =>
+        `${key} ${typeof value === "number" ? formatNumber(value) : value}`,
+    )
+    .join(" · ");
+}
+
+function outcomeHtml(value) {
+  const display =
+    value === null
+      ? "NULL"
+      : typeof value === "boolean"
+        ? value
+          ? "Eligible"
+          : "Not eligible"
+        : active === 2
+          ? `${Number((value * 100).toFixed(4))}%`
+          : formatNumber(value) + (active === 0 ? "%" : "");
+  return `<small>BROWSER PREVIEW · ${escapeHtml(sampleSummary())}</small><div class="value">${escapeHtml(display)}</div>`;
+}
+
+function panelResult(side) {
+  const output = $("#outcome-" + side);
+  try {
+    const ir = compile(states[active][side]);
+    const value = evaluate(ir, Object.fromEntries(definition().sample));
+    if (typeof value === "number" && !Number.isFinite(value))
+      throw new Error("Preview exceeds the supported number range.");
+    output.className = "outcome";
+    output.innerHTML = outcomeHtml(value);
+    $("#json-" + side).textContent = JSON.stringify(ir, null, 2);
+    return { value, ir };
+  } catch (error) {
+    output.className = "outcome error";
+    output.innerHTML = `<small>FIX THIS EXPRESSION</small><p>${escapeHtml(error.message)}</p>`;
+    $("#json-" + side).textContent = "No valid expression to export.";
+    return { error };
+  }
+}
+
+function updateStatus() {
+  const status = $("#status-b");
+  try {
+    compile(states[active].b);
+    status.textContent = "No issues";
+    status.className = "text-xs text-hybrid";
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = "text-xs text-red-700";
+  }
+}
+
+function updateB() {
+  syncHighlight();
+  updateStatus();
+  return panelResult("b");
+}
+
+function updateC() {
+  const s = states[active];
+  $("#hybrid-formula").textContent = s.c;
+  return panelResult("c");
+}
+
+function updateMatch(b, c) {
+  $("#match").textContent =
+    !b || !c || b.error || c.error
+      ? "Fix the highlighted expression to compare results."
+      : JSON.stringify(b.ir) === JSON.stringify(c.ir)
+        ? "Same expression JSON · same result"
+        : b.value === c.value
+          ? "Same result · different expressions"
+          : "Different results · your edits are independent";
+}
+
+function refresh() {
+  const b = updateB(),
+    c = updateC();
+  updateMatch(b, c);
+}
+
 function syncHybrid() {
   const s = states[active];
   if (active === 0) {
@@ -515,88 +792,67 @@ function syncHybrid() {
   if (active === 3)
     s.c = `${s.aggregate}_WHERE(sales.amount, sales.status = ${JSON.stringify(s.status)})`;
 }
-function result(side) {
-  const output = $("#outcome-" + side);
-  try {
-    const s = states[active];
-    const ir = compile(s[side]);
-    const value = evaluate(ir, s.inputs);
-    if (typeof value === "number" && !Number.isFinite(value))
-      throw Error("Preview exceeds the supported number range.");
-    const display =
-      value === null
-        ? "NULL"
-        : typeof value === "boolean"
-          ? value
-            ? "Eligible"
-            : "Not eligible"
-          : active === 2
-            ? `${Number((value * 100).toFixed(4))}%`
-            : new Intl.NumberFormat("en-IN", {
-                maximumFractionDigits: 4,
-              }).format(value) + (active === 0 ? "%" : "");
-    output.className = "outcome";
-    output.innerHTML = `<small>BROWSER PREVIEW · ${active === 3 ? "4 sample rows" : "shared inputs"}</small><div class="value">${escapeHtml(display)}</div><small>${value === null ? "No value. Division by zero returns NULL." : active === 2 ? "Rate stored as " + value : "Valid within this demo’s supported subset."}</small>`;
-    $("#json-" + side).textContent = JSON.stringify(ir, null, 2);
-    return { value, ir };
-  } catch (error) {
-    output.className = "outcome error";
-    output.innerHTML = `<strong>Fix this expression</strong><p>${escapeHtml(error.message)}</p>`;
-    $("#json-" + side).textContent = "No valid expression to export.";
-    return null;
+
+function hybridControls() {
+  const s = states[active];
+  if (active === 0) {
+    const refs = definition().refs;
+    return `<div class="rule"><label>Value<select data-math="operandA">${refs
+      .map((r) => option(r.key, r.key, s.operandA))
+      .join(
+        "",
+      )}</select></label><label>Operator<select data-math="mathOp">${option("/", "÷ divide", s.mathOp)}${option("*", "× multiply", s.mathOp)}${option("+", "+ add", s.mathOp)}${option("-", "− subtract", s.mathOp)}</select></label><label>By<select data-math="operandB">${refs
+      .map((r) => option(r.key, r.key, s.operandB))
+      .join(
+        "",
+      )}</select></label></div><div class="two-fields"><label>Convert to percent (×)<input type="number" data-math="scale" value="${s.scale}"></label><label>Cap at % — blank means no cap<input type="number" data-math="cap" value="${s.cap ?? ""}"></label></div>`;
   }
+  if (active === 1)
+    return `<label>Match<select id="group">${option("AND", "ALL conditions", s.group)}${option("OR", "ANY condition", s.group)}</select></label><div>${s.rules
+      .map(
+        (r, i) =>
+          `<div class="rule"><label>Field<select data-rule="${i}" data-key="field">${definition()
+            .refs.map((f) => option(f.key, f.key, r.field))
+            .join(
+              "",
+            )}</select></label><label>Operator<select data-rule="${i}" data-key="operator">${option("=", "equals", r.operator)}${option("!=", "does not equal", r.operator)}${option("ANY_OF", "is one of", r.operator)}</select></label><label>Value<input data-rule="${i}" data-key="value" value="${escapeHtml(r.value)}"></label><button data-remove-rule="${i}" aria-label="Remove condition ${i + 1}">×</button></div>`,
+      )
+      .join("")}</div><button id="add-rule">+ Add condition</button>`;
+  if (active === 2)
+    return `${s.rates
+      .map(
+        (r, i) =>
+          `<div class="rate"><label>Achievement ≥<input type="number" data-rate="${i}" data-key="threshold" value="${r.threshold}"></label><label>Return rate (decimal)<input type="number" step="0.01" data-rate="${i}" data-key="rate" value="${r.rate}"></label><div><button data-up="${i}" aria-label="Move rate ${i + 1} up" ${i === 0 ? "disabled" : ""}>↑</button><button data-remove-rate="${i}" aria-label="Remove rate ${i + 1}">×</button></div></div>`,
+      )
+      .join(
+        "",
+      )}<label>Otherwise<input id="fallback" type="number" step="0.01" value="${s.fallback}"></label><button id="add-rate" style="margin-top:12px">+ Add condition / rate</button><p class="help">First match wins · applies to the full amount.</p>`;
+  return `<div class="two-fields"><label>Operation<select id="aggregate">${["SUM", "AVERAGE", "COUNT"].map((v) => option(v, v, s.aggregate)).join("")}</select></label><label>Value<select aria-label="Aggregation value"><option>sales.amount</option></select></label></div><h3 class="mt-4 mb-1 text-sm font-bold">Filter included rows</h3><label>sales.status equals<select id="status">${["Approved", "Pending", "Rejected"].map((v) => option(v, v, s.status)).join("")}</select></label><table class="data-table mt-3"><thead><tr><th>Amount</th><th>Status</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${r.amount.toLocaleString("en-IN")}</td><td>${r.status}</td></tr>`).join("")}</tbody></table>`;
 }
-function refresh() {
-  if ($("#hybrid-formula")) $("#hybrid-formula").textContent = states[active].c;
-  const b = result("b"),
-    c = result("c");
-  $("#match").textContent =
-    !b || !c
-      ? "One editor has an invalid expression. Fix it to compare results."
-      : JSON.stringify(b.ir) === JSON.stringify(c.ir)
-        ? "Same expression JSON · same result"
-        : b.value === c.value
-          ? "Same sample result · different expressions. Matching one sample does not prove equivalence."
-          : "Different results · your edits are independent. Compare the formulas and controls.";
-}
+
 function render() {
-  const d = definitions[active],
-    s = states[active];
   $("#scenarios").innerHTML = definitions
     .map(
       (d, i) =>
         `<button data-scenario="${i}" aria-pressed="${i === active}">${d.name}</button>`,
     )
     .join("");
-  $("#scope").textContent = d.scope;
-  $("#task").textContent = d.task;
-  $("#challenge").textContent = d.challenge;
-  $("#inputs").innerHTML =
-    Object.entries(s.inputs)
-      .map(
-        ([key, value]) =>
-          `<label>${escapeHtml(key)}<input data-input="${escapeHtml(key)}" type="${typeof d.inputs[key] === "number" ? "number" : "text"}" value="${escapeHtml(value)}"></label>`,
-      )
-      .join("") ||
-    "<p>Fixed sales rows shown below. Change the status filter in either editor.</p>";
-  $("#dataset").innerHTML =
-    active === 3
-      ? `<table class="data-table"><caption>Fictional sales input</caption><thead><tr><th>Row</th><th>Amount</th><th>Status</th></tr></thead><tbody>${rows.map((r, i) => `<tr><td>${i + 1}</td><td>${r.amount.toLocaleString("en-IN")}</td><td>${r.status}</td></tr>`).join("")}</tbody></table>`
-      : "";
-  $("#workspace-b").innerHTML = formulaEditor("b");
+  $("#refs-b").innerHTML = referenceOptions();
+  $("#ops-b").innerHTML = operatorOptions();
+  $("#fns-b").innerHTML = functionOptions();
+  const textarea = $("#formula-b");
+  textarea.value = states[active].b;
   $("#workspace-c").innerHTML =
-    hybridEditor() +
-    '<div class="code-preview"><strong>Equivalent formula</strong><div id="hybrid-formula"></div></div>';
+    hybridControls() +
+    '<div class="code-preview"><strong>Generated expression</strong><div id="hybrid-formula"></div></div>';
   refresh();
 }
+
 document.addEventListener("input", (event) => {
   const t = event.target,
     s = states[active];
-  if (t.id.startsWith("formula-")) s[t.id.slice(-1)] = t.value;
-  else if (t.dataset.input) {
-    s.inputs[t.dataset.input] =
-      t.type === "number" ? (t.value === "" ? null : Number(t.value)) : t.value;
-  } else if (t.dataset.rule !== undefined) {
+  if (t.id === "formula-b") s.b = t.value;
+  else if (t.dataset.rule !== undefined) {
     s.rules[+t.dataset.rule][t.dataset.key] = t.value;
     syncHybrid();
   } else if (t.dataset.rate !== undefined) {
@@ -615,20 +871,21 @@ document.addEventListener("input", (event) => {
   }
   refresh();
 });
+
 document.addEventListener("change", (event) => {
   const t = event.target,
     s = states[active];
-  if (t.dataset.insert && t.value) {
-    const textarea = $("#formula-" + t.dataset.insert);
-    textarea.setRangeText(
-      t.value,
-      textarea.selectionStart,
-      textarea.selectionEnd,
-      "end",
-    );
-    s[t.dataset.insert] = textarea.value;
+  if (t.id === "refs-b" || t.id === "ops-b" || t.id === "fns-b") {
+    if (!t.value) return;
+    const textarea = $("#formula-b");
+    const start = textarea.selectionStart;
+    textarea.setRangeText(t.value, start, textarea.selectionEnd, "end");
+    if (t.id === "fns-b") selectFirstArgument(textarea, start);
+    s.b = textarea.value;
     textarea.focus();
     t.value = "";
+    refresh();
+    return;
   }
   if (["group", "aggregate", "status"].includes(t.id)) {
     s[t.id] = t.value;
@@ -644,6 +901,7 @@ document.addEventListener("change", (event) => {
   }
   refresh();
 });
+
 document.addEventListener("click", (event) => {
   const t = event.target.closest("button");
   if (!t) return;
@@ -653,9 +911,25 @@ document.addEventListener("click", (event) => {
     render();
     return;
   }
-  if (t.id === "reset") {
-    states[active] = defaults()[active];
+  if (t.dataset.reset !== undefined) {
+    const fresh = defaults()[active];
+    if (t.dataset.reset === "b") s.b = fresh.b;
+    else Object.assign(s, fresh, { b: s.b });
     render();
+    return;
+  }
+  if (t.id === "check-b") {
+    try {
+      compile(s.b);
+      $("#status-b").textContent = "No issues found";
+      $("#status-b").className = "text-xs text-hybrid";
+    } catch (error) {
+      const textarea = $("#formula-b");
+      textarea.focus();
+      textarea.setSelectionRange(error.start, error.end);
+      $("#status-b").textContent = error.message;
+      $("#status-b").className = "text-xs text-red-700";
+    }
     return;
   }
   if (t.id === "add-rule")
@@ -676,9 +950,15 @@ document.addEventListener("click", (event) => {
   syncHybrid();
   render();
 });
+
+$("#formula-b").addEventListener("scroll", () => {
+  $("#highlight-b").scrollTop = $("#formula-b").scrollTop;
+  $("#highlight-b").scrollLeft = $("#formula-b").scrollLeft;
+});
+
 $("#share").addEventListener("click", async () => {
   const url = new URL(location.href);
-  url.hash = encodeURIComponent(JSON.stringify({ version: 1, active, states }));
+  url.hash = encodeURIComponent(JSON.stringify({ version: 2, active, states }));
   history.replaceState(null, "", url);
   $("#toast").textContent = "Share link ready in the address bar. Copying…";
   $("#toast").classList.add("show-toast");
@@ -689,14 +969,11 @@ $("#share").addEventListener("click", async () => {
         setTimeout(() => reject(new Error("Clipboard unavailable")), 1500),
       ),
     ]);
-    $("#toast").textContent =
-      "Link copied, including current edits and inputs.";
+    $("#toast").textContent = "Link copied, including current edits.";
   } catch {
-    $("#toast").textContent =
-      "Copy the URL from your address bar to share these edits.";
-    location.hash = url.hash;
+    $("#toast").textContent = "Copy the URL from your address bar to share.";
   }
-  $("#toast").classList.add("show-toast");
   setTimeout(() => $("#toast").classList.remove("show-toast"), 4500);
 });
+
 render();
