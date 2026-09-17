@@ -45,6 +45,9 @@
         select {
           @apply mt-1.5 block w-full min-w-0 rounded-md border border-slate-300 bg-white px-2.5 py-2 text-ink;
         }
+        input[type="checkbox"] {
+          @apply mt-0 inline-block w-4 align-middle;
+        }
         details {
           @apply border-t border-line px-5 py-3 text-xs;
         }
@@ -118,13 +121,6 @@
         }
         .two-fields {
           @apply grid gap-3 sm:grid-cols-2;
-        }
-        .data-table {
-          @apply w-full border-collapse text-xs;
-        }
-        .data-table th,
-        .data-table td {
-          @apply border-b border-line px-3 py-1.5 text-left;
         }
         .code-preview {
           @apply mt-4 rounded-md bg-teal-50 px-3 py-2 font-mono text-xs leading-relaxed break-words;

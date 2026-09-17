@@ -11,7 +11,7 @@ const escapeHtml = (value) =>
 const definitions = [
   {
     name: "Achievement",
-    formula: "net_sales / params.target_amount * 100",
+    formula: "(net_sales / params.target_amount) * 100",
     refs: [
       { key: "net_sales", type: "NUMBER", group: "Selections" },
       { key: "params.target_amount", type: "NUMBER", group: "Parameters" },
@@ -24,7 +24,7 @@ const definitions = [
       },
       {
         label: "LEAST(number, number)",
-        insert: "LEAST(net_sales / params.target_amount * 100, 100)",
+        insert: "LEAST((net_sales / params.target_amount) * 100, 100)",
         hint: "Smallest value",
       },
       {
@@ -81,7 +81,11 @@ const definitions = [
     name: "Conditional rate",
     formula:
       "CASE(achievement >= 120, 0.08,\n     achievement >= 100, 0.05,\n     achievement >= 80, 0.02, 0)",
-    refs: [{ key: "achievement", type: "NUMBER", group: "Selections" }],
+    refs: [
+      { key: "achievement", type: "NUMBER", group: "Selections" },
+      { key: "net_sales", type: "NUMBER", group: "Selections" },
+      { key: "params.target_amount", type: "NUMBER", group: "Parameters" },
+    ],
     functions: [
       {
         label: "CASE(condition, result, …, fallback)",
@@ -105,7 +109,11 @@ const definitions = [
         hint: "Largest value",
       },
     ],
-    sample: [["achievement", 125]],
+    sample: [
+      ["achievement", 125],
+      ["net_sales", 120000],
+      ["params.target_amount", 100000],
+    ],
   },
   {
     name: "Approved sales",
@@ -147,6 +155,61 @@ const definitions = [
       },
     ],
     sample: [],
+    rows: [
+      { "sales.amount": 60000, "sales.status": "Approved" },
+      { "sales.amount": 40000, "sales.status": "Approved" },
+      { "sales.amount": 15000, "sales.status": "Pending" },
+      { "sales.amount": 5000, "sales.status": "Rejected" },
+    ],
+  },
+  {
+    name: "Quota rule",
+    formula:
+      "(SUM_WHERE(net_sales, is_mid_month_day) / MAX(target_sales)) * 100 < 100",
+    refs: [
+      { key: "net_sales", type: "NUMBER", group: "Source data" },
+      { key: "target_sales", type: "NUMBER", group: "Source data" },
+      { key: "is_mid_month_day", type: "BOOLEAN", group: "Flags" },
+    ],
+    functions: [
+      {
+        label: "SUM_WHERE(field, condition)",
+        insert: "SUM_WHERE(net_sales, is_mid_month_day)",
+        hint: "Totals only rows that match the condition",
+      },
+      {
+        label: "SUM(field)",
+        insert: "SUM(net_sales)",
+        hint: "Totals the field over all rows",
+      },
+      {
+        label: "AVERAGE(field)",
+        insert: "AVERAGE(net_sales)",
+        hint: "Averages the field over all rows",
+      },
+      {
+        label: "MAX(field)",
+        insert: "MAX(target_sales)",
+        hint: "Largest value of the field",
+      },
+      {
+        label: "MIN(field)",
+        insert: "MIN(target_sales)",
+        hint: "Smallest value of the field",
+      },
+      {
+        label: "COALESCE(number, number)",
+        insert: "COALESCE(net_sales, 0)",
+        hint: "First value that is not null",
+      },
+    ],
+    sample: [],
+    rows: [
+      { net_sales: 40000, target_sales: 100000, is_mid_month_day: true },
+      { net_sales: 20000, target_sales: 100000, is_mid_month_day: true },
+      { net_sales: 25000, target_sales: 100000, is_mid_month_day: false },
+      { net_sales: 15000, target_sales: 100000, is_mid_month_day: false },
+    ],
   },
 ];
 
@@ -165,13 +228,6 @@ const operators = [
   [" OR ", "OR"],
 ];
 
-const rows = [
-  { amount: 60000, status: "Approved" },
-  { amount: 40000, status: "Approved" },
-  { amount: 15000, status: "Pending" },
-  { amount: 5000, status: "Rejected" },
-];
-
 const defaults = () =>
   definitions.map((d) => ({
     b: d.formula,
@@ -188,12 +244,25 @@ const defaults = () =>
     ],
     fallback: 0,
     aggregate: "SUM",
-    status: "Approved",
+    basis: "achievement",
+    rateTemplate: "TIERED",
+    flatRate: 0.05,
+    valueField: "sales.amount",
+    filterOn: true,
+    filterField: "sales.status",
+    filterOp: "=",
+    filterValue: "Approved",
     operandA: "net_sales",
     mathOp: "/",
     operandB: "params.target_amount",
     scale: 100,
-    cap: null,
+    numeratorAgg: "SUM_WHERE",
+    numeratorField: "net_sales",
+    numeratorFilter: "is_mid_month_day",
+    denominatorAgg: "MAX",
+    denominatorField: "target_sales",
+    compareOp: "<",
+    compareValue: 100,
   }));
 
 let states = defaults(),
@@ -207,13 +276,26 @@ function validSharedState(s, i) {
     s.c.length <= 5000 &&
     ["AND", "OR"].includes(s.group) &&
     ["SUM", "AVERAGE", "COUNT"].includes(s.aggregate) &&
-    ["Approved", "Pending", "Rejected"].includes(s.status) &&
+    ["TIERED", "FLAT"].includes(s.rateTemplate) &&
+    Number.isFinite(s.flatRate) &&
+    definitions[2].refs.some((r) => r.key === s.basis) &&
+    definitions[3].refs.some((r) => r.key === s.valueField) &&
+    typeof s.filterOn === "boolean" &&
+    definitions[3].refs.some((r) => r.key === s.filterField) &&
+    ["=", "!="].includes(s.filterOp) &&
+    (typeof s.filterValue === "string" || Number.isFinite(s.filterValue)) &&
     Number.isFinite(s.fallback) &&
     ["net_sales", "params.target_amount"].includes(s.operandA) &&
     ["net_sales", "params.target_amount"].includes(s.operandB) &&
     ["/", "*", "+", "-"].includes(s.mathOp) &&
     Number.isFinite(s.scale) &&
-    (s.cap === null || Number.isFinite(s.cap)) &&
+    ["SUM_WHERE", "SUM", "AVERAGE"].includes(s.numeratorAgg) &&
+    definitions[4].refs.some((r) => r.key === s.numeratorField) &&
+    ["is_mid_month_day", "none"].includes(s.numeratorFilter) &&
+    ["MAX", "MIN", "SUM"].includes(s.denominatorAgg) &&
+    definitions[4].refs.some((r) => r.key === s.denominatorField) &&
+    ["<", "<=", ">", ">=", "=", "!="].includes(s.compareOp) &&
+    Number.isFinite(s.compareValue) &&
     Array.isArray(s.rules) &&
     s.rules.length <= 30 &&
     s.rules.every(
@@ -234,12 +316,12 @@ try {
   if (location.hash) {
     const saved = JSON.parse(decodeURIComponent(location.hash.slice(1)));
     if (
-      saved.version === 2 &&
+      saved.version === 5 &&
       Array.isArray(saved.states) &&
-      saved.states.length === 4 &&
+      saved.states.length === 5 &&
       Number.isInteger(saved.active) &&
       saved.active >= 0 &&
-      saved.active < 4 &&
+      saved.active < 5 &&
       saved.states.every(validSharedState)
     ) {
       states = saved.states;
@@ -388,6 +470,8 @@ function compile(text) {
         SUM: [1, 1],
         AVERAGE: [1, 1],
         COUNT: [1, 1],
+        MAX: [1, 1],
+        MIN: [1, 1],
         SUM_WHERE: [2, 2],
         AVERAGE_WHERE: [2, 2],
         COUNT_WHERE: [2, 2],
@@ -431,7 +515,7 @@ function compile(text) {
       at(),
     );
   const type = checkType(result);
-  const expected = active === 1 ? "BOOLEAN" : "NUMBER";
+  const expected = [1, 4].includes(active) ? "BOOLEAN" : "NUMBER";
   if (type !== expected)
     throw formulaError(
       `This context needs ${expected.toLowerCase()}, but the expression returns ${type.toLowerCase()}.`,
@@ -452,10 +536,10 @@ function checkType(node, insideAggregate = false) {
     return refByKey()[key].type;
   }
   const op = node.operation;
-  const aggregate = ["SUM", "AVERAGE", "COUNT"].includes(op);
-  if (aggregate && (active !== 3 || insideAggregate))
+  const aggregate = ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"].includes(op);
+  if (aggregate && (![3, 4].includes(active) || insideAggregate))
     throw new Error(
-      "Aggregates are only available in Approved sales and cannot be nested.",
+      "Aggregates are only available in Approved sales and Quota rule, and cannot be nested.",
     );
   const types = node.operands.map((n) =>
     checkType(n, insideAggregate || aggregate),
@@ -526,21 +610,17 @@ function evaluate(node, sample) {
   }
   const op = node.operation,
     args = node.operands;
-  if (["SUM", "AVERAGE", "COUNT"].includes(op)) {
-    const values = rows
-      .map((row) => ({
-        "sales.amount": row.amount,
-        "sales.status": row.status,
-      }))
+  if (["SUM", "AVERAGE", "COUNT", "MAX", "MIN"].includes(op)) {
+    const values = (definition().rows ?? [])
       .filter((row) => !node.filter || evaluate(node.filter, row) === true)
       .map((row) => evaluate(args[0], row))
       .filter((v) => v !== null);
-    return op === "COUNT"
-      ? values.length
-      : !values.length
-        ? null
-        : values.reduce((a, b) => a + b, 0) /
-          (op === "AVERAGE" ? values.length : 1);
+    if (op === "COUNT") return values.length;
+    if (!values.length) return null;
+    if (op === "MAX") return Math.max(...values);
+    if (op === "MIN") return Math.min(...values);
+    const total = values.reduce((a, b) => a + b, 0);
+    return op === "AVERAGE" ? total / values.length : total;
   }
   if (op === "CASE") {
     for (let i = 0; i < args.length - 1; i += 2)
@@ -677,30 +757,22 @@ function selectFirstArgument(textarea, insertedAt) {
 const formatNumber = (value) =>
   new Intl.NumberFormat("en-IN", { maximumFractionDigits: 4 }).format(value);
 
-function sampleSummary() {
-  const d = definition();
-  if (!d.sample.length)
-    return `4 sample rows · status = ${states[active].status}`;
-  return d.sample
-    .map(
-      ([key, value]) =>
-        `${key} ${typeof value === "number" ? formatNumber(value) : value}`,
-    )
-    .join(" · ");
-}
-
 function outcomeHtml(value) {
   const display =
     value === null
       ? "NULL"
       : typeof value === "boolean"
-        ? value
-          ? "Eligible"
-          : "Not eligible"
+        ? active === 1
+          ? value
+            ? "Eligible"
+            : "Not eligible"
+          : value
+            ? "Rule true"
+            : "Rule false"
         : active === 2
           ? `${Number((value * 100).toFixed(4))}%`
           : formatNumber(value) + (active === 0 ? "%" : "");
-  return `<small>BROWSER PREVIEW · ${escapeHtml(sampleSummary())}</small><div class="value">${escapeHtml(display)}</div>`;
+  return `<small>BROWSER PREVIEW</small><div class="value">${escapeHtml(display)}</div>`;
 }
 
 function panelResult(side) {
@@ -768,9 +840,7 @@ function syncHybrid() {
   if (active === 0) {
     const scale = Number(s.scale);
     const base = `${s.operandA} ${s.mathOp} ${s.operandB}`;
-    const scaled =
-      Number.isFinite(scale) && scale !== 1 ? `(${base}) * ${scale}` : base;
-    s.c = s.cap === null ? scaled : `LEAST(${scaled}, ${s.cap})`;
+    s.c = Number.isFinite(scale) && scale !== 1 ? `(${base}) * ${scale}` : base;
   }
   if (active === 1)
     s.c = s.rules
@@ -786,11 +856,26 @@ function syncHybrid() {
       )
       .join(` ${s.group} `);
   if (active === 2)
-    s.c = s.rates.length
-      ? `CASE(${s.rates.map((r) => `achievement >= ${r.threshold}, ${r.rate}`).join(", ")}, ${s.fallback})`
-      : String(s.fallback);
+    s.c =
+      s.rateTemplate === "FLAT"
+        ? String(s.flatRate)
+        : s.rates.length
+          ? `CASE(${s.rates.map((r) => `${s.basis} >= ${r.threshold}, ${r.rate}`).join(", ")}, ${s.fallback})`
+          : String(s.fallback);
   if (active === 3)
-    s.c = `${s.aggregate}_WHERE(sales.amount, sales.status = ${JSON.stringify(s.status)})`;
+    s.c = s.filterOn
+      ? `${s.aggregate}_WHERE(${s.valueField}, ${s.filterField} ${s.filterOp} ${JSON.stringify(s.filterValue)})`
+      : `${s.aggregate}(${s.valueField})`;
+  if (active === 4) {
+    const numerator =
+      s.numeratorAgg === "SUM_WHERE"
+        ? `SUM_WHERE(${s.numeratorField}, ${s.numeratorFilter})`
+        : `${s.numeratorAgg}(${s.numeratorField})`;
+    const denominator = `${s.denominatorAgg}(${s.denominatorField})`;
+    const scale = Number(s.scale);
+    const base = `(${numerator} / ${denominator})${Number.isFinite(scale) && scale !== 1 ? ` * ${scale}` : ""}`;
+    s.c = `${base} ${s.compareOp} ${s.compareValue}`;
+  }
 }
 
 function hybridControls() {
@@ -805,7 +890,7 @@ function hybridControls() {
       .map((r) => option(r.key, r.key, s.operandB))
       .join(
         "",
-      )}</select></label></div><div class="two-fields"><label>Convert to percent (×)<input type="number" data-math="scale" value="${s.scale}"></label><label>Cap at % — blank means no cap<input type="number" data-math="cap" value="${s.cap ?? ""}"></label></div>`;
+      )}</select></label></div><div class="two-fields"><label>Convert to percent (×)<input type="number" data-math="scale" value="${s.scale}"></label></div>`;
   }
   if (active === 1)
     return `<label>Match<select id="group">${option("AND", "ALL conditions", s.group)}${option("OR", "ANY condition", s.group)}</select></label><div>${s.rules
@@ -819,15 +904,70 @@ function hybridControls() {
       )
       .join("")}</div><button id="add-rule">+ Add condition</button>`;
   if (active === 2)
-    return `${s.rates
-      .map(
-        (r, i) =>
-          `<div class="rate"><label>Achievement ≥<input type="number" data-rate="${i}" data-key="threshold" value="${r.threshold}"></label><label>Return rate (decimal)<input type="number" step="0.01" data-rate="${i}" data-key="rate" value="${r.rate}"></label><div><button data-up="${i}" aria-label="Move rate ${i + 1} up" ${i === 0 ? "disabled" : ""}>↑</button><button data-remove-rate="${i}" aria-label="Remove rate ${i + 1}">×</button></div></div>`,
-      )
+    return `<div class="two-fields"><label>Template<select id="rateTemplate">${option("TIERED", "Tiered rate table", s.rateTemplate)}${option("FLAT", "Flat rate", s.rateTemplate)}</select></label><label>Based on<select id="basis">${definition()
+      .refs.map((r) => option(r.key, r.key, s.basis))
+      .join("")}</select></label></div>${
+      s.rateTemplate === "FLAT"
+        ? `<label class="mt-3">Rate (decimal)<input type="number" step="0.01" id="flatRate" value="${s.flatRate}"></label>`
+        : `${s.rates
+            .map(
+              (r, i) =>
+                `<div class="rate"><label>${escapeHtml(s.basis)} ≥<input type="number" data-rate="${i}" data-key="threshold" value="${r.threshold}"></label><label>Return rate (decimal)<input type="number" step="0.01" data-rate="${i}" data-key="rate" value="${r.rate}"></label><div><button data-up="${i}" aria-label="Move rate ${i + 1} up" ${i === 0 ? "disabled" : ""}>↑</button><button data-remove-rate="${i}" aria-label="Remove rate ${i + 1}">×</button></div></div>`,
+            )
+            .join(
+              "",
+            )}<label>Otherwise<input id="fallback" type="number" step="0.01" value="${s.fallback}"></label><button id="add-rate" style="margin-top:12px">+ Add condition / rate</button><p class="help">First match wins · applies to the full amount.</p>`
+    }`;
+  if (active === 4) {
+    const numericRefs = definition().refs.filter((r) => r.type === "NUMBER");
+    const flags = definition().refs.filter((r) => r.type === "BOOLEAN");
+    return `<div class="two-fields"><label>Numerator<select id="numeratorAgg">${option("SUM_WHERE", "SUM_WHERE (filtered)", s.numeratorAgg)}${option("SUM", "SUM", s.numeratorAgg)}${option("AVERAGE", "AVERAGE", s.numeratorAgg)}</select></label><label>of<select id="numeratorField">${numericRefs
+      .map((r) => option(r.key, r.key, s.numeratorField))
+      .join("")}</select></label></div>${
+      s.numeratorAgg === "SUM_WHERE"
+        ? `<label class="mt-3">where<select id="numeratorFilter">${flags
+            .map((r) => option(r.key, r.key, s.numeratorFilter))
+            .join("")}</select></label>`
+        : ""
+    }<div class="two-fields mt-3"><label>Denominator<select id="denominatorAgg">${["MAX", "MIN", "SUM"].map((v) => option(v, v, s.denominatorAgg)).join("")}</select></label><label>of<select id="denominatorField">${numericRefs
+      .map((r) => option(r.key, r.key, s.denominatorField))
       .join(
         "",
-      )}<label>Otherwise<input id="fallback" type="number" step="0.01" value="${s.fallback}"></label><button id="add-rate" style="margin-top:12px">+ Add condition / rate</button><p class="help">First match wins · applies to the full amount.</p>`;
-  return `<div class="two-fields"><label>Operation<select id="aggregate">${["SUM", "AVERAGE", "COUNT"].map((v) => option(v, v, s.aggregate)).join("")}</select></label><label>Value<select aria-label="Aggregation value"><option>sales.amount</option></select></label></div><h3 class="mt-4 mb-1 text-sm font-bold">Filter included rows</h3><label>sales.status equals<select id="status">${["Approved", "Pending", "Rejected"].map((v) => option(v, v, s.status)).join("")}</select></label><table class="data-table mt-3"><thead><tr><th>Amount</th><th>Status</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${r.amount.toLocaleString("en-IN")}</td><td>${r.status}</td></tr>`).join("")}</tbody></table>`;
+      )}</select></label></div><p class="help">Grouped by product_id · location_code (statement level)</p><div class="two-fields"><label>Scale (×)<input type="number" data-math="scale" value="${s.scale}"></label><label>Compare<select id="compareOp">${[
+      "<",
+      "<=",
+      ">",
+      ">=",
+      "=",
+      "!=",
+    ]
+      .map((v) => option(v, v, s.compareOp))
+      .join(
+        "",
+      )}</select></label></div><label class="mt-3">To value<input type="number" id="compareValue" value="${s.compareValue}"></label>`;
+  }
+  const filterRef = definition().refs.find((r) => r.key === s.filterField);
+  const filterValueControl =
+    filterRef.type === "NUMBER"
+      ? `<input type="number" id="filterValue" value="${escapeHtml(s.filterValue)}">`
+      : `<select id="filterValue">${["Approved", "Pending", "Rejected"]
+          .map((v) => option(v, v, s.filterValue))
+          .join("")}</select>`;
+  return `<div class="two-fields"><label>Operation<select id="aggregate">${["SUM", "AVERAGE", "COUNT"].map((v) => option(v, v, s.aggregate)).join("")}</select></label><label>Value<select id="valueField">${definition()
+    .refs.map((r) =>
+      option(r.key, `${r.key} · ${r.type.toLowerCase()}`, s.valueField),
+    )
+    .join(
+      "",
+    )}</select></label></div><label class="mt-3 flex items-center gap-2"><input type="checkbox" id="filterOn" ${s.filterOn ? "checked" : ""}>Apply filter</label>${
+    s.filterOn
+      ? `<div class="rule"><label>Filter field<select id="filterField">${definition()
+          .refs.map((r) => option(r.key, r.key, s.filterField))
+          .join(
+            "",
+          )}</select></label><label>Operator<select id="filterOp">${option("=", "equals", s.filterOp)}${option("!=", "does not equal", s.filterOp)}</select></label><label>Value${filterValueControl}</label></div>`
+      : ""
+  }`;
 }
 
 function render() {
@@ -862,11 +1002,19 @@ document.addEventListener("input", (event) => {
   } else if (t.dataset.math !== undefined) {
     if (t.dataset.math === "scale")
       s.scale = t.value === "" ? 1 : Number(t.value);
-    else if (t.dataset.math === "cap")
-      s.cap = t.value === "" ? null : Number(t.value);
     syncHybrid();
   } else if (t.id === "fallback") {
     s.fallback = t.value === "" ? "" : Number(t.value);
+    syncHybrid();
+  } else if (t.id === "flatRate") {
+    s.flatRate = t.value === "" ? 0 : Number(t.value);
+    syncHybrid();
+  } else if (t.id === "filterValue") {
+    s.filterValue =
+      t.type === "number" ? (t.value === "" ? 0 : Number(t.value)) : t.value;
+    syncHybrid();
+  } else if (t.id === "compareValue") {
+    s.compareValue = t.value === "" ? 0 : Number(t.value);
     syncHybrid();
   }
   refresh();
@@ -887,9 +1035,48 @@ document.addEventListener("change", (event) => {
     refresh();
     return;
   }
-  if (["group", "aggregate", "status"].includes(t.id)) {
+  if (t.id === "filterOn") {
+    s.filterOn = t.checked;
+    syncHybrid();
+    render();
+    return;
+  }
+  if (t.id === "filterField") {
+    s.filterField = t.value;
+    const ref = definition().refs.find((r) => r.key === t.value);
+    s.filterValue = ref.type === "NUMBER" ? 0 : "Approved";
+    syncHybrid();
+    render();
+    return;
+  }
+  if (t.id === "filterValue" && t.tagName === "SELECT") {
+    s.filterValue = t.value;
+    syncHybrid();
+    refresh();
+    return;
+  }
+  if (
+    [
+      "group",
+      "aggregate",
+      "basis",
+      "rateTemplate",
+      "valueField",
+      "filterOp",
+      "numeratorAgg",
+      "numeratorField",
+      "numeratorFilter",
+      "denominatorAgg",
+      "denominatorField",
+      "compareOp",
+    ].includes(t.id)
+  ) {
     s[t.id] = t.value;
     syncHybrid();
+    if (
+      ["basis", "rateTemplate", "numeratorAgg", "denominatorAgg"].includes(t.id)
+    )
+      render();
   }
   if (t.dataset.rule !== undefined) {
     s.rules[+t.dataset.rule][t.dataset.key] = t.value;
@@ -958,7 +1145,7 @@ $("#formula-b").addEventListener("scroll", () => {
 
 $("#share").addEventListener("click", async () => {
   const url = new URL(location.href);
-  url.hash = encodeURIComponent(JSON.stringify({ version: 2, active, states }));
+  url.hash = encodeURIComponent(JSON.stringify({ version: 5, active, states }));
   history.replaceState(null, "", url);
   $("#toast").textContent = "Share link ready in the address bar. Copying…";
   $("#toast").classList.add("show-toast");
