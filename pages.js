@@ -11,4 +11,16 @@ const PAGES = [
     url: "incentive-builder-comparison/",
     date: "Sep 17, 2026",
   },
+  {
+    title: "ABM Business Rule Designer",
+    desc: "SAP-style plan configuration · define ABM data contracts, measures, eligibility, payout parameters and generated V2 JSON.",
+    url: "abm-sap-rule-editor/",
+    date: "Sep 18, 2026",
+  },
+  {
+    title: "Incentive Engine V2 Designer",
+    desc: "Presentational SAP-style workspace for the complete V2 engine · blocks, populations, sources, transformations, variables, rules, payout, distribution and charts.",
+    url: "v2-engine-designer/",
+    date: "Sep 18, 2026",
+  },
 ];

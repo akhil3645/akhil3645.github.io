@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ABM incentive · Business rule editor</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-shell: #0b1f33;
+        --color-shell-soft: #17324d;
+        --color-sap-blue: #0a6ed1;
+        --color-sap-blue-soft: #e9f3fc;
+        --color-canvas: #f5f7fa;
+        --color-line: #d5dadd;
+        --color-ink: #1d2d3e;
+        --color-muted: #556b82;
+        --color-success: #107e3e;
+        --color-success-soft: #eaf7ef;
+        --color-warning: #e9730c;
+        --color-warning-soft: #fff3e8;
+        --font-sans: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      }
+
+      @layer base {
+        * { box-sizing: border-box; }
+        body { @apply m-0 min-h-screen bg-canvas font-sans text-[14px] text-ink antialiased; }
+        button, input, select, textarea { font: inherit; }
+        button { @apply cursor-pointer; }
+        :is(button, input, select, textarea, a):focus-visible {
+          @apply outline-3 outline-offset-2 outline-sap-blue;
+        }
+        input, select, textarea {
+          @apply rounded-sm border border-slate-400 bg-white px-3 py-2 text-ink shadow-[inset_0_1px_1px_rgba(0,0,0,.03)];
+        }
+        input:focus, select:focus, textarea:focus { @apply border-sap-blue; }
+      }
+
+      @layer components {
+        .top-action { @apply rounded-sm border border-white/25 bg-white/8 px-3 py-2 text-[13px] font-semibold text-white hover:bg-white/15; }
+        .top-action-primary { @apply border-sap-blue bg-sap-blue hover:bg-blue-600; }
+        .object-nav { @apply border-r border-line bg-white; }
+        .nav-button { @apply flex w-full items-center gap-3 border-l-3 border-transparent px-4 py-3 text-left text-[13px] font-semibold text-muted hover:bg-slate-100 hover:text-ink; }
+        .nav-button[aria-current="page"] { @apply border-sap-blue bg-sap-blue-soft text-sap-blue; }
+        .nav-icon { @apply grid size-7 shrink-0 place-items-center rounded-sm border border-current/20 bg-white text-[11px] font-bold; }
+        .nav-count { @apply ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-normal text-muted; }
+        .editor-page { @apply hidden; }
+        .editor-page.active { @apply block; }
+        .page-kicker { @apply mb-1 text-[11px] font-bold tracking-[.13em] text-sap-blue uppercase; }
+        .page-title { @apply m-0 text-[25px] font-semibold tracking-[-.02em] text-ink; }
+        .page-copy { @apply mt-1 max-w-3xl text-[13px] leading-5 text-muted; }
+        .section-card { @apply border border-line bg-white shadow-[0_1px_2px_rgba(11,31,51,.04)]; }
+        .section-head { @apply flex flex-wrap items-center gap-3 border-b border-line px-5 py-3.5; }
+        .section-head h2 { @apply m-0 text-[15px] font-semibold; }
+        .section-body { @apply p-5; }
+        .field-label { @apply mb-1.5 block text-[12px] font-semibold text-muted; }
+        .button { @apply rounded-sm border border-slate-400 bg-white px-3 py-2 text-[13px] font-semibold text-ink hover:border-sap-blue hover:bg-sap-blue-soft; }
+        .button-primary { @apply border-sap-blue bg-sap-blue text-white hover:bg-blue-600; }
+        .button-quiet { @apply border-transparent bg-transparent text-sap-blue hover:bg-sap-blue-soft; }
+        .status-pill { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold; }
+        .status-good { @apply bg-success-soft text-success; }
+        .status-warn { @apply bg-warning-soft text-amber-800; }
+        .status-neutral { @apply bg-slate-100 text-muted; }
+        .source-card { @apply relative border border-line bg-white p-4 transition hover:border-slate-400; }
+        .source-card.active-source { @apply border-sap-blue ring-1 ring-sap-blue; }
+        .source-card.disabled-source { @apply bg-slate-50; }
+        .source-type { @apply mb-3 inline-flex rounded-sm bg-slate-100 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-muted; }
+        .formula-box { @apply rounded-sm border border-slate-300 bg-[#f8fafc] px-4 py-3 font-mono text-[13px] leading-6 text-slate-800; }
+        .token-measure { @apply rounded-sm bg-blue-100 px-1.5 py-0.5 text-blue-800; }
+        .token-param { @apply rounded-sm bg-violet-100 px-1.5 py-0.5 text-violet-800; }
+        .rule-row { @apply grid items-end gap-3 border-b border-line px-4 py-3 last:border-b-0 lg:grid-cols-[1.5fr_1fr_1fr_auto]; }
+        .logic-line { @apply relative flex min-w-[145px] flex-1 items-center; }
+        .logic-line:not(:last-child)::after { content: ""; @apply mx-2 h-px min-w-5 flex-1 bg-slate-300; }
+        .logic-node { @apply min-w-0 rounded-sm border border-line bg-white px-3 py-2.5 shadow-sm; }
+        .logic-node.active-node { @apply border-sap-blue bg-sap-blue-soft; }
+        .logic-node-label { @apply truncate text-[10px] font-bold tracking-[.08em] text-muted uppercase; }
+        .logic-node-value { @apply mt-0.5 truncate text-[13px] font-semibold text-ink; }
+        .inspector { @apply border-l border-line bg-white; }
+        .inspector-section { @apply border-b border-line p-4; }
+        .inspector-label { @apply text-[10px] font-bold tracking-[.12em] text-muted uppercase; }
+        .check-row { @apply flex gap-2.5 py-2 text-[12px] leading-4; }
+        .check-mark { @apply mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-success text-[10px] font-bold text-white; }
+        .warning-mark { @apply mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-warning text-[10px] font-bold text-white; }
+        .json-code { @apply max-h-[540px] overflow-auto whitespace-pre-wrap break-words rounded-sm bg-[#071523] p-4 font-mono text-[11px] leading-[1.65] text-slate-200; }
+        .toast { @apply fixed right-5 bottom-5 z-50 translate-y-4 rounded-sm bg-shell px-4 py-3 text-[13px] font-semibold text-white opacity-0 shadow-xl transition; }
+        .toast.show { @apply translate-y-0 opacity-100; }
+      }
+
+      @media (max-width: 1099px) {
+        .app-grid { grid-template-columns: 210px minmax(0, 1fr) !important; }
+        .inspector { display: none; }
+      }
+      @media (max-width: 720px) {
+        .app-grid { display: block !important; }
+        .object-nav { @apply sticky top-[58px] z-20 overflow-x-auto border-r-0 border-b; }
+        .object-nav-inner { @apply block min-w-max p-0; }
+        #object-navigation { @apply flex min-w-max p-1; }
+        .object-nav .nav-heading, .object-nav .nav-footer { display: none; }
+        .nav-button { @apply w-auto border-l-0 border-b-3 px-3 py-2; }
+        .nav-button[aria-current="page"] { @apply border-b-sap-blue; }
+        .nav-icon, .nav-count { display: none; }
+        .editor-main { padding: 18px 14px 48px !important; }
+      }
+    </style>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="sticky top-0 z-30 flex h-[58px] items-center gap-3 bg-shell px-4 text-white shadow-md sm:px-5">
+      <a href="../" class="grid size-8 place-items-center rounded-sm text-lg text-white no-underline hover:bg-white/10" aria-label="Back to experiments">←</a>
+      <div class="h-6 w-px bg-white/20"></div>
+      <div class="grid size-8 place-items-center rounded-sm bg-sap-blue text-[11px] font-black tracking-tight">BR</div>
+      <div class="min-w-0">
+        <div class="truncate text-[14px] font-semibold">Business Rule Designer</div>
+        <div class="truncate text-[11px] text-slate-300">ABM quarterly incentive · Plan configuration</div>
+      </div>
+      <div class="ml-auto hidden items-center gap-2 sm:flex">
+        <button id="save-draft" class="top-action">Save draft</button>
+        <button id="validate-definition" class="top-action">Validate</button>
+        <button id="export-definition" class="top-action top-action-primary">Export V2 JSON</button>
+      </div>
+      <button id="mobile-actions" class="top-action ml-auto sm:hidden" aria-label="Open actions">•••</button>
+    </header>
+
+    <div class="border-b border-line bg-white px-5 py-2 text-[12px] text-muted">
+      <div class="mx-auto flex max-w-[1720px] flex-wrap items-center gap-2">
+        <span>Program templates</span><span class="text-slate-400">/</span><span>UNS</span><span class="text-slate-400">/</span>
+        <strong class="text-ink">Area Business Manager Incentive</strong>
+        <span class="status-pill status-good ml-auto"><span>●</span> Plan definition structurally valid</span>
+      </div>
+    </div>
+
+    <main class="app-grid mx-auto grid min-h-[calc(100vh-91px)] max-w-[1720px] grid-cols-[236px_minmax(0,1fr)_294px]">
+      <aside class="object-nav" aria-label="Rule objects">
+        <div class="object-nav-inner sticky top-[91px]">
+          <div class="nav-heading border-b border-line px-4 py-4">
+            <div class="text-[10px] font-bold tracking-[.14em] text-muted uppercase">Rule objects</div>
+            <div class="mt-1 text-[13px] font-semibold">ABM incentive</div>
+          </div>
+          <nav id="object-navigation" class="py-2">
+            <button class="nav-button" data-page="overview" aria-current="page"><span class="nav-icon">OV</span><span>Overview</span></button>
+            <button class="nav-button" data-page="data"><span class="nav-icon">DB</span><span>Data objects</span><span class="nav-count">3</span></button>
+            <button class="nav-button" data-page="measures"><span class="nav-icon">ƒx</span><span>Measures</span><span class="nav-count">6</span></button>
+            <button class="nav-button" data-page="eligibility"><span class="nav-icon">IF</span><span>Eligibility decision</span><span class="nav-count">2</span></button>
+            <button class="nav-button" data-page="payout"><span class="nav-icon">₹</span><span>Payout formula</span></button>
+            <button class="nav-button" data-page="parameters"><span class="nav-icon">P</span><span>Parameters</span><span class="nav-count">3</span></button>
+            <button class="nav-button" data-page="definition"><span class="nav-icon">{ }</span><span>V2 definition</span></button>
+          </nav>
+          <div class="nav-footer mx-3 mt-3 border border-amber-200 bg-warning-soft p-3 text-[11px] leading-4 text-amber-900">
+            <strong class="block">1 runtime dependency</strong>
+            Prepared ABM input must be materialized before V2 calculation.
+          </div>
+        </div>
+      </aside>
+
+      <div class="editor-main min-w-0 px-6 py-6 xl:px-8">
+        <section class="editor-page active" data-page-panel="overview">
+          <div class="page-kicker">Function · ABM_QTR_INCENTIVE</div>
+          <div class="flex flex-wrap items-start gap-4">
+            <div class="min-w-0 flex-1">
+              <h1 class="page-title">Area Business Manager incentive</h1>
+              <p class="page-copy">A volume-based quarterly rule that pays 125% of the FF-weighted team average when area sales reach 95% and the manager remains employed.</p>
+            </div>
+            <span class="status-pill status-neutral">Version V2</span>
+            <span class="status-pill status-neutral">Quarterly</span>
+          </div>
+
+          <div class="section-card mt-6 overflow-hidden">
+            <div class="section-head"><h2>Calculation path</h2><span class="ml-auto text-[11px] text-muted">Configured plan flow</span></div>
+            <div class="overflow-x-auto p-5">
+              <div class="flex min-w-[780px] items-center" id="logic-path"></div>
+            </div>
+          </div>
+
+          <div class="mt-5 grid gap-5 xl:grid-cols-[1.3fr_.7fr]">
+            <div class="section-card">
+              <div class="section-head"><h2>Business definition</h2></div>
+              <div class="section-body grid gap-4 sm:grid-cols-2">
+                <div><span class="field-label">Eligible population</span><strong>ABM employees in the selected BU</strong><p class="mt-1 text-[12px] text-muted">Restricted again by enrolled program employees at runtime.</p></div>
+                <div><span class="field-label">Timeline</span><strong>Quarterly · April 1–March 31</strong><p class="mt-1 text-[12px] text-muted">Four independent calculation timelines per program year.</p></div>
+                <div><span class="field-label">Primary measure</span><strong>FF-weighted team incentive</strong><p class="mt-1 text-[12px] text-muted">Dependent program amounts weighted by field-force count.</p></div>
+                <div><span class="field-label">Payout condition</span><strong>Achievement ≥ <span data-threshold-text>95</span>% and active</strong><p class="mt-1 text-[12px] text-muted">Failed rules produce a zero incentive.</p></div>
+              </div>
+            </div>
+            <div class="section-card">
+              <div class="section-head"><h2>Plan objects</h2></div>
+              <div class="section-body">
+                <dl class="grid grid-cols-[1fr_auto] gap-x-5 gap-y-3 text-[12px]">
+                  <dt class="text-muted">Data sources</dt><dd class="font-semibold">1 prepared source</dd>
+                  <dt class="text-muted">Measures</dt><dd class="font-semibold">6</dd>
+                  <dt class="text-muted">Eligibility rules</dt><dd class="font-semibold" data-rule-count>2</dd>
+                  <dt class="text-muted">Payout formula</dt><dd class="font-semibold">1</dd>
+                  <dt class="text-muted">Parameters</dt><dd class="font-semibold">3</dd>
+                </dl>
+                <button class="button button-quiet mt-4 px-0" data-go="definition">Inspect generated definition →</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-page" data-page-panel="data">
+          <div class="page-kicker">Database lookup · Sources</div>
+          <h1 class="page-title">Choose calculation data</h1>
+          <p class="page-copy">The current engine needs employee-attributed source documents. This prototype uses one prepared source and shows the raw sources required to materialize it.</p>
+          <div class="mt-6 grid gap-4 lg:grid-cols-3">
+            <article class="source-card active-source">
+              <span class="source-type">SOURCE_DATA · ACTIVE</span>
+              <h2 class="text-[16px] font-semibold">ABM Calculation Input</h2>
+              <p class="mt-1 text-[12px] leading-5 text-muted">One attributed record per ABM and quarter, ready for V2 evaluation.</p>
+              <div class="mt-4 flex items-center gap-2 text-[11px] text-success"><span>●</span><strong>Compatible with V2</strong></div>
+            </article>
+            <article class="source-card disabled-source">
+              <span class="source-type">RAW DEPENDENCY</span>
+              <h2 class="text-[16px] font-semibold">UNS Daily Sales</h2>
+              <p class="mt-1 text-[12px] leading-5 text-muted">Sales and targets by HQ, product and month. Records are not employee-attributed.</p>
+              <button class="button mt-4 w-full" data-capability="Unattributed aggregate sources">Review requirement</button>
+            </article>
+            <article class="source-card disabled-source">
+              <span class="source-type">RAW DEPENDENCY</span>
+              <h2 class="text-[16px] font-semibold">FF Count + program results</h2>
+              <p class="mt-1 text-[12px] leading-5 text-muted">Field-force weights and dependent-program HQ incentive amounts.</p>
+              <button class="button mt-4 w-full" data-capability="Dependent program result sources">Review requirement</button>
+            </article>
+          </div>
+
+          <div class="section-card mt-5">
+            <div class="section-head"><h2>Prepared source contract</h2><span class="status-pill status-good ml-auto">7 required fields</span></div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[660px] border-collapse text-left text-[12px]">
+                <thead class="bg-slate-50 text-muted"><tr><th class="px-5 py-3 font-semibold">Business field</th><th class="px-4 py-3 font-semibold">Physical key</th><th class="px-4 py-3 font-semibold">Type</th><th class="px-4 py-3 font-semibold">Origin</th></tr></thead>
+                <tbody id="source-schema"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="section-card mt-5">
+            <div class="section-head"><h2>Runtime binding</h2></div>
+            <div class="section-body grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+              <label><span class="field-label">Document type ID</span><input id="document-type-id" class="w-full font-mono text-[12px]" value="REPLACE_WITH_DOCUMENT_TYPE_ID" /></label>
+              <button class="button" id="check-binding">Check binding</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-page" data-page-panel="measures">
+          <div class="page-kicker">Table operation · Measures</div>
+          <h1 class="page-title">Build the team average</h1>
+          <p class="page-copy">The prepared source materializes the dependent-program rollup. This page defines the measures exposed to the plan; no runtime records are loaded in this configuration view.</p>
+          <div class="section-card mt-6">
+            <div class="section-head"><h2>Configured measures</h2><span class="status-pill status-neutral ml-auto">6 definitions</span></div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[680px] border-collapse text-left text-[12px]">
+                <thead class="bg-slate-50 text-muted"><tr><th class="px-5 py-3 font-semibold">Measure</th><th class="px-4 py-3 font-semibold">Alias</th><th class="px-4 py-3 font-semibold">Type</th><th class="px-4 py-3 font-semibold">Definition</th></tr></thead>
+                <tbody id="measure-definitions"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="section-card mt-5">
+            <div class="section-head"><h2>Measure formula</h2><span class="status-pill status-warn ml-auto">Materialized upstream</span></div>
+            <div class="section-body">
+              <div class="formula-box"><span class="token-measure">Team incentive by HQ</span> × <span class="token-measure">FF Count</span><br />────────────────────────────────────────<br />Σ <span class="token-measure">FF Count</span></div>
+              <p class="mt-3 text-[12px] leading-5 text-muted">V2 can consume this value, but the current source catalog cannot directly read dependent program incentive records or historical HQ-to-area mappings.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-page" data-page-panel="eligibility">
+          <div class="page-kicker">Boolean expression · Decision</div>
+          <h1 class="page-title">Decide who receives a payout</h1>
+          <p class="page-copy">Every rule must pass. Rules remain separate in the V2 definition so the failed rule is visible in calculation logs.</p>
+          <div class="section-card mt-6">
+            <div class="section-head"><h2>ALL of these conditions</h2><span class="status-pill status-neutral ml-auto">AND</span></div>
+            <div id="rule-builder">
+              <div class="rule-row">
+                <label><span class="field-label">Measure</span><select disabled><option>Sales achievement percentage</option></select></label>
+                <label><span class="field-label">Operator</span><select disabled><option>is at least</option></select></label>
+                <label><span class="field-label">Value</span><div class="relative"><input data-threshold-input type="number" min="0" max="200" step="0.1" class="w-full pr-8" /><span class="absolute top-2.5 right-3 text-muted">%</span></div></label>
+                <span class="status-pill status-neutral mb-1 justify-center">Configured</span>
+              </div>
+              <div class="rule-row">
+                <label><span class="field-label">Employee fact</span><select disabled><option>Has resigned</option></select></label>
+                <label><span class="field-label">Operator</span><select disabled><option>equals</option></select></label>
+                <label><span class="field-label">Value</span><select disabled><option>No</option></select></label>
+                <span class="status-pill status-neutral mb-1 justify-center">Configured</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 border-t border-line bg-slate-50 px-4 py-3">
+              <button class="button" id="add-condition">+ Add condition</button>
+              <span class="text-[11px] text-muted">Additional conditions are included as independent V2 rules.</span>
+            </div>
+          </div>
+          <div class="section-card mt-5">
+            <div class="section-head"><h2>Decision output</h2></div>
+            <div class="section-body grid gap-4 sm:grid-cols-2">
+              <div class="border border-green-200 bg-success-soft p-4"><div class="text-[11px] font-bold text-success">WHEN ALL PASS</div><div class="mt-2 text-[16px] font-semibold">Pay potential incentive</div></div>
+              <div class="border border-slate-300 bg-slate-50 p-4"><div class="text-[11px] font-bold text-muted">WHEN ANY FAILS</div><div class="mt-2 text-[16px] font-semibold">Pay ₹0</div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-page" data-page-panel="payout">
+          <div class="page-kicker">Formula · Incentive amount</div>
+          <h1 class="page-title">Calculate the potential payout</h1>
+          <p class="page-copy">The current backend has no numeric ROUND operation, so the prepared source stores the exact two-decimal potential incentive.</p>
+          <div class="section-card mt-6">
+            <div class="section-head"><h2>Business formula</h2><span class="status-pill status-good ml-auto">Returns NUMBER</span></div>
+            <div class="section-body">
+              <div class="grid gap-4 sm:grid-cols-[1fr_150px] sm:items-end">
+                <div><span class="field-label">Formula</span><div class="formula-box text-[15px]"><span class="token-measure">Team Average Incentive</span> × <span class="token-param">Manager Multiplier</span></div></div>
+                <label><span class="field-label">Manager multiplier</span><input data-multiplier-input type="number" min="0" max="5" step="0.05" class="w-full" /></label>
+              </div>
+              <div class="mt-5 border border-line bg-slate-50 p-4 text-[12px] leading-5 text-muted"><strong class="block text-ink">Stored output</strong>The upstream preparation step rounds the formula to two decimals and writes <span class="font-mono text-ink">potential_incentive</span>. The V2 block consumes that field as its incentive amount.</div>
+            </div>
+          </div>
+          <div class="section-card mt-5">
+            <div class="section-head"><h2>Compiled V2 value</h2></div>
+            <div class="section-body"><pre id="payout-expression" class="json-code max-h-72"></pre></div>
+          </div>
+        </section>
+
+        <section class="editor-page" data-page-panel="parameters">
+          <div class="page-kicker">Constants · Effective values</div>
+          <h1 class="page-title">Maintain business parameters</h1>
+          <p class="page-copy">Business users edit named values; the engine receives typed, effective-dated program parameters.</p>
+          <div class="section-card mt-6 overflow-hidden">
+            <div class="section-head"><h2>Effective for all timelines</h2><button class="button button-quiet ml-auto">+ Add period</button></div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[680px] border-collapse text-left text-[12px]">
+                <thead class="bg-slate-50 text-muted"><tr><th class="px-5 py-3 font-semibold">Parameter</th><th class="px-4 py-3 font-semibold">Key</th><th class="px-4 py-3 font-semibold">Type</th><th class="px-4 py-3 font-semibold">Value</th></tr></thead>
+                <tbody>
+                  <tr class="border-t border-line"><td class="px-5 py-3 font-semibold">Business Unit</td><td class="px-4 py-3 font-mono text-muted">business_unit</td><td class="px-4 py-3">Text</td><td class="px-4 py-3"><input data-business-unit-input class="w-64 font-mono text-[12px]" value="REPLACE_WITH_BUSINESS_UNIT" /></td></tr>
+                  <tr class="border-t border-line"><td class="px-5 py-3 font-semibold">Achievement Threshold</td><td class="px-4 py-3 font-mono text-muted">achievement_threshold</td><td class="px-4 py-3">Number</td><td class="px-4 py-3"><div class="flex items-center gap-2"><input data-threshold-input type="number" min="0" max="200" step="0.1" class="w-28" /><span>%</span></div></td></tr>
+                  <tr class="border-t border-line"><td class="px-5 py-3 font-semibold">Manager Multiplier</td><td class="px-4 py-3 font-mono text-muted">manager_multiplier</td><td class="px-4 py-3">Number</td><td class="px-4 py-3"><input data-multiplier-input type="number" min="0" max="5" step="0.05" class="w-28" /></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-page" data-page-panel="definition">
+          <div class="page-kicker">Advanced · Canonical representation</div>
+          <div class="flex flex-wrap items-start gap-3">
+            <div class="min-w-0 flex-1"><h1 class="page-title">V2 program definition</h1><p class="page-copy">This is generated from the specialized editors. It can be sent to the V2 incentive-block endpoint after replacing the document type ID.</p></div>
+            <button id="copy-json" class="button">Copy JSON</button>
+            <button id="download-json" class="button button-primary">Download</button>
+          </div>
+          <div class="mt-6 grid gap-5 xl:grid-cols-[1fr_250px]">
+            <pre id="definition-json" class="json-code"></pre>
+            <div class="space-y-4">
+              <div class="section-card p-4"><div class="inspector-label">Generated objects</div><dl class="mt-3 grid grid-cols-[1fr_auto] gap-y-2 text-[12px]"><dt>Sources</dt><dd class="font-semibold">1</dd><dt>Blocks</dt><dd class="font-semibold">1</dd><dt>Variables</dt><dd class="font-semibold">6</dd><dt>Rules</dt><dd class="font-semibold" id="definition-rule-count">2</dd><dt>Charts</dt><dd class="font-semibold">4</dd></dl></div>
+              <div class="border border-amber-200 bg-warning-soft p-4 text-[12px] leading-5 text-amber-900"><strong class="block">Before runtime</strong>Replace the placeholder document type ID and materialize employee-attributed ABM input records.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="inspector">
+        <div class="sticky top-[91px] max-h-[calc(100vh-91px)] overflow-y-auto">
+          <div class="inspector-section bg-slate-50">
+            <div class="inspector-label">Selected object</div>
+            <div id="inspector-title" class="mt-2 text-[15px] font-semibold">Program overview</div>
+            <div id="inspector-kind" class="mt-1 font-mono text-[11px] text-muted">FUNCTION</div>
+          </div>
+          <div class="inspector-section">
+            <div class="inspector-label">Validation</div>
+            <div class="mt-2">
+              <div class="check-row"><span class="check-mark">✓</span><span>Definition shape matches the current V2 block schema.</span></div>
+              <div class="check-row"><span class="check-mark">✓</span><span>Rules return Boolean values and payout returns Number.</span></div>
+              <div class="check-row"><span class="warning-mark">!</span><span>Prepared source is an integration requirement, not generated by V2.</span></div>
+            </div>
+          </div>
+          <div class="inspector-section">
+            <div class="inspector-label">Plan structure</div>
+            <dl class="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2.5 text-[12px]">
+              <dt class="text-muted">Block type</dt><dd class="font-semibold">Volume</dd>
+              <dt class="text-muted">Sources</dt><dd class="font-semibold">1</dd>
+              <dt class="text-muted">Measures</dt><dd class="font-semibold">6</dd>
+              <dt class="text-muted">Rules</dt><dd class="font-semibold" data-rule-count>2</dd>
+            </dl>
+          </div>
+          <div class="inspector-section">
+            <div class="inspector-label">Implementation boundary</div>
+            <p class="mt-2 text-[12px] leading-5 text-muted">Raw dependent-program results, FF mode selection, area history and sales normalization remain in the preparation step.</p>
+            <button class="button button-quiet mt-2 px-0" data-go="data">Inspect source contract →</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Incentive Engine V2 · Plan Designer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-shell: #071d31;
+        --color-shell-2: #123552;
+        --color-sap: #0a6ed1;
+        --color-sap-soft: #eaf3fc;
+        --color-canvas: #f4f6f8;
+        --color-line: #d5dadd;
+        --color-ink: #172b3f;
+        --color-muted: #5b7185;
+        --color-positive: #107e3e;
+        --color-positive-soft: #eaf7ef;
+        --color-caution: #e9730c;
+        --color-caution-soft: #fff4e5;
+        --color-violet: #6a4bbc;
+        --font-sans: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      }
+
+      @layer base {
+        * { box-sizing: border-box; }
+        html { background: var(--color-canvas); }
+        body { @apply m-0 min-h-screen bg-canvas font-sans text-[13px] text-ink antialiased; }
+        button, input, select { font: inherit; }
+        button { @apply cursor-pointer; }
+        input, select { @apply h-9 rounded-sm border border-slate-400 bg-white px-3 text-ink; }
+        :is(button, input, select, a):focus-visible { @apply outline-3 outline-offset-2 outline-sap; }
+      }
+
+      @layer components {
+        .shell-btn { @apply rounded-sm border border-white/25 bg-white/8 px-3 py-2 text-[12px] font-semibold text-white hover:bg-white/15; }
+        .shell-btn-primary { @apply border-sap bg-sap hover:bg-blue-600; }
+        .object-link { @apply flex w-full items-center gap-2.5 border-l-3 border-transparent px-3 py-2 text-left text-[12px] font-medium text-muted hover:bg-slate-100 hover:text-ink; }
+        .object-link[aria-current="page"] { @apply border-sap bg-sap-soft font-semibold text-sap; }
+        .object-icon { @apply grid size-6 shrink-0 place-items-center rounded-sm border border-current/20 bg-white font-mono text-[9px] font-bold; }
+        .object-count { @apply ml-auto rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] text-muted; }
+        .section-label { @apply px-3 pt-4 pb-1.5 text-[10px] font-bold tracking-[.14em] text-slate-500 uppercase; }
+        .editor-view { @apply hidden; }
+        .editor-view.active { @apply block; }
+        .eyebrow { @apply text-[10px] font-bold tracking-[.15em] text-sap uppercase; }
+        .view-title { @apply mt-1 text-[25px] font-semibold tracking-[-.025em] text-ink; }
+        .view-copy { @apply mt-1 max-w-3xl text-[13px] leading-5 text-muted; }
+        .card { @apply border border-line bg-white shadow-[0_1px_2px_rgba(7,29,49,.04)]; }
+        .card-head { @apply flex min-h-12 flex-wrap items-center gap-3 border-b border-line px-4 py-3; }
+        .card-head h2 { @apply text-[14px] font-semibold; }
+        .card-body { @apply p-4; }
+        .label { @apply mb-1.5 block text-[11px] font-semibold text-muted; }
+        .btn { @apply rounded-sm border border-slate-400 bg-white px-3 py-2 text-[12px] font-semibold text-ink hover:border-sap hover:bg-sap-soft; }
+        .btn-primary { @apply border-sap bg-sap text-white hover:bg-blue-600; }
+        .btn-quiet { @apply border-transparent bg-transparent text-sap hover:bg-sap-soft; }
+        .pill { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold; }
+        .pill-neutral { @apply bg-slate-100 text-muted; }
+        .pill-good { @apply bg-positive-soft text-positive; }
+        .pill-warn { @apply bg-caution-soft text-amber-800; }
+        .pill-blue { @apply bg-sap-soft text-sap; }
+        .type-card { @apply border border-line bg-white p-4 text-left hover:border-slate-400; }
+        .type-card.selected { @apply border-sap bg-sap-soft ring-1 ring-sap; }
+        .type-code { @apply font-mono text-[10px] font-bold tracking-[.06em] text-sap; }
+        .field-row { @apply grid items-center gap-3 border-t border-line px-4 py-3 first:border-t-0; }
+        .field-code { @apply font-mono text-[11px] text-muted; }
+        .expression { @apply flex min-h-11 flex-wrap items-center gap-1.5 rounded-sm border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-[11px]; }
+        .token-source { @apply rounded-sm bg-blue-100 px-1.5 py-1 text-blue-800; }
+        .token-op { @apply rounded-sm bg-violet-100 px-1.5 py-1 text-violet-800; }
+        .token-param { @apply rounded-sm bg-amber-100 px-1.5 py-1 text-amber-800; }
+        .step { @apply relative border border-line bg-white p-4; }
+        .step:not(:last-child)::after { content: ""; @apply absolute top-1/2 -right-[22px] h-px w-[21px] bg-slate-400; }
+        .step:not(:last-child)::before { content: "›"; @apply absolute top-[calc(50%-9px)] -right-[25px] z-10 bg-canvas text-base text-slate-500; }
+        .step-key { @apply font-mono text-[9px] font-bold tracking-[.1em] text-sap uppercase; }
+        .step-name { @apply mt-1 text-[13px] font-semibold; }
+        .step-meta { @apply mt-1 text-[11px] text-muted; }
+        .tree-row { @apply flex items-center gap-2 border-b border-line px-3 py-2.5 last:border-0; }
+        .tree-key { @apply min-w-0 flex-1 font-mono text-[11px] text-ink; }
+        .tree-kind { @apply text-[9px] font-bold tracking-wide text-muted uppercase; }
+        .inspector-block { @apply border-b border-line p-4; }
+        .inspector-label { @apply text-[9px] font-bold tracking-[.14em] text-muted uppercase; }
+        .option-chip { @apply rounded-sm border border-line bg-white px-2 py-1.5 font-mono text-[10px] text-muted; }
+        .option-chip.active { @apply border-sap bg-sap-soft text-sap; }
+        .catalog-group { @apply border-b border-line py-3 last:border-b-0; }
+        .catalog-title { @apply mb-2 text-[10px] font-bold tracking-wide text-ink uppercase; }
+        .catalog-items { @apply flex flex-wrap gap-1.5; }
+        .flow-grid { @apply grid grid-cols-4 gap-5; }
+        .warning { @apply border border-amber-200 bg-caution-soft p-3 text-[11px] leading-5 text-amber-900; }
+        .info { @apply border border-blue-200 bg-sap-soft p-3 text-[11px] leading-5 text-blue-900; }
+      }
+
+      @media (max-width: 1180px) {
+        .app-grid { grid-template-columns: 225px minmax(0, 1fr) !important; }
+        .inspector { display: none; }
+      }
+      @media (max-width: 760px) {
+        .app-grid { display: block !important; }
+        .object-panel { @apply sticky top-[58px] z-20 overflow-x-auto border-r-0 border-b; }
+        .object-panel-inner { @apply flex min-w-max bg-white p-1; }
+        .tree-heading, .section-label, .object-panel-footer { display: none; }
+        .object-link { @apply w-auto border-l-0 border-b-3 px-3 py-2.5; }
+        .object-link[aria-current="page"] { @apply border-b-sap; }
+        .object-icon, .object-count { display: none; }
+        .editor-main { @apply px-3 py-5!; }
+        .flow-grid { @apply grid-cols-1; }
+        .step:not(:last-child)::after, .step:not(:last-child)::before { display: none; }
+      }
+    </style>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="sticky top-0 z-30 flex h-[58px] items-center gap-3 bg-shell px-4 text-white shadow-md">
+      <a href="../" class="grid size-8 place-items-center rounded-sm text-lg text-white no-underline hover:bg-white/10" aria-label="Back to pages">←</a>
+      <div class="h-6 w-px bg-white/20"></div>
+      <div class="grid size-8 place-items-center rounded-sm bg-sap font-mono text-[11px] font-black">V2</div>
+      <div class="min-w-0">
+        <div class="truncate text-[14px] font-semibold">Incentive Engine Designer</div>
+        <div class="truncate text-[10px] tracking-wide text-slate-300 uppercase">Plan definition workspace</div>
+      </div>
+      <div class="ml-auto hidden items-center gap-2 sm:flex">
+        <button class="shell-btn">Save draft</button>
+        <button class="shell-btn">Validate</button>
+        <button class="shell-btn shell-btn-primary">Publish version</button>
+      </div>
+      <button class="shell-btn ml-auto sm:hidden" aria-label="Open actions">•••</button>
+    </header>
+
+    <div class="border-b border-line bg-white px-4 py-2">
+      <div class="mx-auto flex max-w-[1800px] items-center gap-2 text-[11px] text-muted">
+        <span>Incentive programs</span><span>/</span><strong class="text-ink">Area Business Manager Incentive</strong>
+        <span class="pill pill-neutral ml-2">Draft 3</span>
+        <span class="pill pill-good ml-auto"><span>●</span> Structure valid</span>
+      </div>
+    </div>
+
+    <main class="app-grid mx-auto grid min-h-[calc(100vh-91px)] max-w-[1800px] grid-cols-[258px_minmax(0,1fr)_316px]">
+      <aside class="object-panel border-r border-line bg-white">
+        <div class="sticky top-[91px] max-h-[calc(100vh-91px)] overflow-y-auto">
+          <div class="tree-heading border-b border-line px-4 py-4">
+            <div class="text-[9px] font-bold tracking-[.14em] text-muted uppercase">Definition outline</div>
+            <div class="mt-1 flex items-center gap-2 font-semibold"><span>ABM incentive</span><span class="pill pill-blue ml-auto">V2</span></div>
+          </div>
+          <nav id="object-navigation" class="object-panel-inner pb-3" aria-label="Definition sections">
+            <div class="section-label">Program</div>
+            <button class="object-link" data-view="map" aria-current="page"><span class="object-icon">⌘</span><span>Definition map</span></button>
+            <button class="object-link" data-view="setup"><span class="object-icon">P</span><span>Plan setup</span></button>
+            <button class="object-link" data-view="blocks"><span class="object-icon">B</span><span>Calculation blocks</span><span class="object-count">1</span></button>
+            <div class="section-label">Selected block</div>
+            <button class="object-link" data-view="population"><span class="object-icon">E</span><span>Employee population</span></button>
+            <button class="object-link" data-view="sources"><span class="object-icon">DB</span><span>Source data</span><span class="object-count">1</span></button>
+            <button class="object-link" data-view="transformations"><span class="object-icon">T</span><span>Transformations</span><span class="object-count">0</span></button>
+            <button class="object-link" data-view="inputs"><span class="object-icon">↔</span><span>Calculation sources</span></button>
+            <button class="object-link" data-view="variables"><span class="object-icon">ƒx</span><span>Variables</span><span class="object-count">6</span></button>
+            <button class="object-link" data-view="generation"><span class="object-icon">IF</span><span>Rules & payout</span><span class="object-count">2</span></button>
+            <button class="object-link" data-view="parameters"><span class="object-icon">{ }</span><span>Parameters</span><span class="object-count">3</span></button>
+            <button class="object-link" data-view="distribution"><span class="object-icon">%</span><span>Distribution</span></button>
+            <button class="object-link" data-view="workspace"><span class="object-icon">▥</span><span>Workspace charts</span><span class="object-count">4</span></button>
+            <div class="section-label">Shared tools</div>
+            <button class="object-link" data-view="expressions"><span class="object-icon">()</span><span>Expression builder</span></button>
+            <div class="section-label">Review</div>
+            <button class="object-link" data-view="review"><span class="object-icon">✓</span><span>Validate & inspect</span></button>
+          </nav>
+          <div class="object-panel-footer m-3 border border-blue-200 bg-sap-soft p-3 text-[10px] leading-4 text-blue-900">
+            <strong class="block">One canonical definition</strong>
+            Every editor writes to the same V2 block structure.
+          </div>
+        </div>
+      </aside>
+
+      <div class="editor-main min-w-0 px-6 py-6 xl:px-8">
+        <section class="editor-view active" data-view-panel="map">
+          <div class="eyebrow">Engine architecture</div>
+          <h1 class="view-title">One plan, composed from typed objects</h1>
+          <p class="view-copy">The designer follows the execution order of the V2 engine. Each section owns one part of the definition while the expression builder is shared everywhere.</p>
+
+          <div class="card mt-6">
+            <div class="card-head"><h2>Definition flow</h2><span class="pill pill-neutral ml-auto">Execution order</span></div>
+            <div class="overflow-x-auto p-5">
+              <div class="flow-grid min-w-[850px]">
+                <div class="step"><div class="step-key">01 · scope</div><div class="step-name">Employees</div><div class="step-meta">Population, joins and filter</div></div>
+                <div class="step"><div class="step-key">02 · ingest</div><div class="step-name">Block sources</div><div class="step-meta">Documents, aliases and filters</div></div>
+                <div class="step"><div class="step-key">03 · shape</div><div class="step-name">Transformations</div><div class="step-meta">General or aggregation queries</div></div>
+                <div class="step"><div class="step-key">04 · calculate</div><div class="step-name">Variables</div><div class="step-meta">Reusable typed expressions</div></div>
+                <div class="step"><div class="step-key">05 · decide</div><div class="step-name">Rules</div><div class="step-meta">Employee or transaction eligibility</div></div>
+                <div class="step"><div class="step-key">06 · pay</div><div class="step-name">Incentive amount</div><div class="step-meta">Volume or transaction result</div></div>
+                <div class="step"><div class="step-key">07 · distribute</div><div class="step-name">Allocation</div><div class="step-meta">Full or positioned split</div></div>
+                <div class="step"><div class="step-key">08 · explain</div><div class="step-name">Workspace</div><div class="step-meta">Value, amount and gauge charts</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 grid gap-5 xl:grid-cols-[1.1fr_.9fr]">
+            <div class="card">
+              <div class="card-head"><h2>Definition hierarchy</h2><span class="font-mono text-[10px] text-muted">IncEngProgram</span></div>
+              <div class="card-body">
+                <div class="border border-line">
+                  <div class="tree-row bg-slate-50"><span class="object-icon">P</span><span class="tree-key font-semibold">program</span><span class="tree-kind">root</span></div>
+                  <div class="ml-5 border-l border-line">
+                    <div class="tree-row"><span class="tree-key">sourceDataTypes[]</span><span class="tree-kind">catalog</span></div>
+                    <div class="tree-row"><span class="tree-key">blocks[]</span><span class="tree-kind">calculation</span></div>
+                    <div class="ml-5 border-l border-line bg-slate-50/50">
+                      <div class="tree-row"><span class="tree-key">employees</span><span class="tree-kind">query</span></div>
+                      <div class="tree-row"><span class="tree-key">blockSources[]</span><span class="tree-kind">query</span></div>
+                      <div class="tree-row"><span class="tree-key">transformationSteps[]</span><span class="tree-kind">pipeline</span></div>
+                      <div class="tree-row"><span class="tree-key">employeeCalculation*</span><span class="tree-kind">metrics</span></div>
+                      <div class="tree-row"><span class="tree-key">volume | transaction generation</span><span class="tree-kind">payout</span></div>
+                      <div class="tree-row"><span class="tree-key">parameters + values</span><span class="tree-kind">configuration</span></div>
+                      <div class="tree-row"><span class="tree-key">distribution</span><span class="tree-kind">allocation</span></div>
+                      <div class="tree-row"><span class="tree-key">workspaceCharts[]</span><span class="tree-kind">presentation</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2>Current program configuration</h2></div>
+              <div class="card-body">
+                <dl class="grid grid-cols-[1fr_auto] gap-x-5 gap-y-3 text-[12px]">
+                  <dt class="text-muted">Version</dt><dd class="font-semibold">V2</dd>
+                  <dt class="text-muted">Period</dt><dd class="font-semibold">Quarterly</dd>
+                  <dt class="text-muted">Blocks</dt><dd class="font-semibold">1</dd>
+                  <dt class="text-muted">Block mode</dt><dd class="font-semibold">Volume based</dd>
+                  <dt class="text-muted">Source data types</dt><dd class="font-semibold">1</dd>
+                  <dt class="text-muted">Parameters</dt><dd class="font-semibold">3</dd>
+                </dl>
+                <button class="btn btn-primary mt-5" data-go="setup">Open plan setup</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="setup">
+          <div class="eyebrow">Program · Identity and schedule</div>
+          <h1 class="view-title">Plan setup</h1>
+          <p class="view-copy">Program-level settings establish the calendar and source catalog. Calculation behavior belongs inside one or more blocks.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>Program identity</h2></div>
+            <div class="card-body grid gap-4 md:grid-cols-2">
+              <label><span class="label">Program name</span><input class="w-full" value="Area Business Manager Incentive" /></label>
+              <label><span class="label">Definition version</span><select class="w-full"><option>V2</option></select></label>
+              <label><span class="label">Calculation period</span><select class="w-full"><option>Quarterly</option><option>Monthly</option><option>Yearly</option></select></label>
+              <label><span class="label">Program status</span><select class="w-full"><option>Draft</option><option>Active</option></select></label>
+              <label><span class="label">Start date</span><input class="w-full" type="date" value="2026-04-01" /></label>
+              <label><span class="label">End date</span><input class="w-full" type="date" value="2027-03-31" /></label>
+            </div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Program source catalog</h2><span class="ml-auto text-[11px] text-muted">Maps external document types to stable keys</span></div>
+            <div class="field-row grid-cols-[1fr_1fr_130px_auto]"><strong>ABM Calculation Input</strong><span class="field-code">abm_calculation_input</span><span class="pill pill-blue">SOURCE_DATA</span><button class="btn">Edit</button></div>
+            <div class="border-t border-line bg-slate-50 px-4 py-3"><button class="btn">+ Add source data type</button></div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="blocks">
+          <div class="eyebrow">Program · Calculation units</div>
+          <h1 class="view-title">Calculation blocks</h1>
+          <p class="view-copy">A program can contain multiple blocks. Each block independently defines its population, data preparation, metrics, eligibility and payout.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>ABM quarterly block</h2><span class="pill pill-good ml-auto">Configured</span></div>
+            <div class="card-body">
+              <span class="label">Calculation mode</span>
+              <div class="grid gap-4 md:grid-cols-2">
+                <button class="type-card selected"><span class="type-code">VOLUME_BASED</span><strong class="mt-2 block text-[15px]">One result per employee</strong><span class="mt-1 block text-[11px] leading-5 text-muted">Calculate employee metrics, apply employee rules, then generate one incentive amount.</span></button>
+                <button class="type-card"><span class="type-code">TRANSACTION_BASED</span><strong class="mt-2 block text-[15px]">One result per transaction</strong><span class="mt-1 block text-[11px] leading-5 text-muted">Calculate transaction metrics and amounts, then sum attributed results for each employee.</span></button>
+              </div>
+              <div class="mt-5 grid gap-4 md:grid-cols-2">
+                <label><span class="label">Block title</span><input class="w-full" value="ABM Incentive Block" /></label>
+                <label><span class="label">Block key</span><input class="w-full font-mono text-[11px]" value="abm_incentive" /></label>
+              </div>
+            </div>
+          </div>
+          <button class="btn mt-5">+ Add calculation block</button>
+        </section>
+
+        <section class="editor-view" data-view-panel="population">
+          <div class="eyebrow">Block · Employees</div>
+          <h1 class="view-title">Employee population</h1>
+          <p class="view-copy">Define who enters the block. The employee master source is fixed; joins and a Boolean filter narrow the eligible population.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>Base population</h2><span class="pill pill-blue ml-auto">MASTER_DATA · employees</span></div>
+            <div class="card-body grid gap-4 md:grid-cols-3">
+              <label><span class="label">Source</span><select class="w-full"><option>Employees</option></select></label>
+              <label><span class="label">Alias</span><input class="w-full font-mono" value="employees" /></label>
+              <label><span class="label">Runtime enrollment</span><select class="w-full"><option>Eligible employee IDs</option></select></label>
+            </div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Population filter</h2><button class="btn btn-quiet ml-auto">Open expression editor</button></div>
+            <div class="card-body">
+              <div class="expression"><span class="token-op">AND</span><span>(</span><span class="token-source">employees.emp_cat_type</span><span>=</span><span>"ABM"</span><span>,</span><span class="token-source">employees.division_name</span><span>=</span><span class="token-param">business_unit</span><span>)</span></div>
+            </div>
+            <div class="border-t border-line px-4 py-3"><button class="btn">+ Add master-data join</button></div>
+          </div>
+          <div class="info mt-5"><strong>Available here:</strong> INNER, LEFT, RIGHT, FULL and CROSS joins. All joins except CROSS require a Boolean condition.</div>
+        </section>
+
+        <section class="editor-view" data-view-panel="sources">
+          <div class="eyebrow">Block · Data intake</div>
+          <h1 class="view-title">Source data</h1>
+          <p class="view-copy">Select document sources from the program catalog, assign block-local aliases, then apply timeline, employee and business filters.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>Block sources</h2><button class="btn ml-auto">+ Add source</button></div>
+            <div class="field-row grid-cols-[1.2fr_1fr_1fr_auto]"><div><strong>ABM Calculation Input</strong><div class="mt-1 text-[10px] text-muted">Document source</div></div><span class="field-code">abm_input_raw</span><span class="pill pill-blue">SOURCE_DATA</span><button class="btn">Configure</button></div>
+          </div>
+          <div class="mt-5 grid gap-4 md:grid-cols-3">
+            <div class="type-card selected"><span class="type-code">SOURCE_DATA</span><strong class="mt-2 block">Document type</strong><p class="mt-1 text-[11px] leading-5 text-muted">Tenant input documents selected from the program source catalog.</p></div>
+            <div class="type-card"><span class="type-code">MASTER_DATA</span><strong class="mt-2 block">Master record</strong><p class="mt-1 text-[11px] leading-5 text-muted">Engine-owned entities such as employees.</p></div>
+            <div class="type-card"><span class="type-code">TRANSFORMATION</span><strong class="mt-2 block">Derived source</strong><p class="mt-1 text-[11px] leading-5 text-muted">Output from an earlier named transformation step.</p></div>
+          </div>
+          <div class="warning mt-5">Posted-date timeline filtering and employee attribution are applied by the engine to block document sources. The editor should make those implicit filters visible but not editable.</div>
+        </section>
+
+        <section class="editor-view" data-view-panel="transformations">
+          <div class="eyebrow">Block · Query pipeline</div>
+          <h1 class="view-title">Transformations</h1>
+          <p class="view-copy">Create named, ordered datasets. A step may read document, master or prior transformation sources; later steps can reference earlier outputs.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>Transformation pipeline</h2><button class="btn ml-auto">+ Add step</button></div>
+            <div class="p-4">
+              <div class="border border-dashed border-slate-400 bg-slate-50 px-5 py-8 text-center">
+                <strong class="block text-[14px]">No transformation steps in this block</strong>
+                <p class="mx-auto mt-1 max-w-lg text-[11px] leading-5 text-muted">ABM uses its prepared document source directly. Add a step when another plan needs filtering, joins, derived fields or aggregation.</p>
+                <div class="mx-auto mt-4 grid max-w-lg gap-3 sm:grid-cols-2">
+                  <button class="type-card"><span class="type-code">GENERAL</span><strong class="mt-1 block">Row-level shaping</strong></button>
+                  <button class="type-card"><span class="type-code">AGGREGATION</span><strong class="mt-1 block">Grouped dataset</strong></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Step editor anatomy</h2></div>
+            <div class="grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
+              <div class="bg-white p-4"><span class="type-code">FROM</span><strong class="mt-2 block">Primary source</strong><p class="mt-1 text-[11px] text-muted">Source type, key and alias</p></div>
+              <div class="bg-white p-4"><span class="type-code">RELATE</span><strong class="mt-2 block">Joins + filter</strong><p class="mt-1 text-[11px] text-muted">Five join types and Boolean expressions</p></div>
+              <div class="bg-white p-4"><span class="type-code">SHAPE</span><strong class="mt-2 block">Selections + groups</strong><p class="mt-1 text-[11px] text-muted">Aliased expressions, group by and having</p></div>
+              <div class="bg-white p-4"><span class="type-code">ORDER</span><strong class="mt-2 block">Sort output</strong><p class="mt-1 text-[11px] text-muted">Selection alias or derived expression, ASC/DESC</p></div>
+            </div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Query options</h2></div>
+            <div class="card-body space-y-4">
+              <div><span class="label">Join types</span><div class="flex flex-wrap gap-2"><span class="option-chip">INNER</span><span class="option-chip">LEFT</span><span class="option-chip">RIGHT</span><span class="option-chip">FULL</span><span class="option-chip">CROSS</span></div></div>
+              <div><span class="label">Order expression</span><div class="flex flex-wrap gap-2"><span class="option-chip">SELECTION_ALIAS</span><span class="option-chip">DERIVED</span><span class="option-chip">ASC</span><span class="option-chip">DESC</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="inputs">
+          <div class="eyebrow">Block · Calculation context</div>
+          <h1 class="view-title">Calculation sources</h1>
+          <p class="view-copy">Attach prepared datasets to the calculation grain. Relations must resolve one-to-one with the parent employee or primary transaction.</p>
+          <div class="grid gap-5 mt-6 xl:grid-cols-2">
+            <div class="card">
+              <div class="card-head"><h2>Employee calculation sources</h2><span class="pill pill-good ml-auto">All blocks</span></div>
+              <div class="card-body">
+                <div class="border border-line p-3"><div class="flex gap-2"><strong>ABM input</strong><span class="pill pill-blue ml-auto">SOURCE_DATA</span></div><div class="expression mt-3"><span class="token-source">employees.id</span><span>=</span><span class="token-source">abm_input.employee_id</span></div></div>
+                <button class="btn mt-3">+ Attach source</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2>Transaction calculation sources</h2><span class="pill pill-neutral ml-auto">Transaction mode</span></div>
+              <div class="card-body"><p class="text-[11px] leading-5 text-muted">Shown when the block is transaction based. Select the primary transaction source, then attach one-to-one supporting datasets.</p><button class="btn mt-3">Choose primary transaction source</button></div>
+            </div>
+          </div>
+          <div class="warning mt-5"><strong>Cardinality contract:</strong> calculation sources enrich a row; they must not duplicate employees or transactions.</div>
+        </section>
+
+        <section class="editor-view" data-view-panel="variables">
+          <div class="eyebrow">Block · Reusable expressions</div>
+          <h1 class="view-title">Calculation variables</h1>
+          <p class="view-copy">Variables are ordered, typed expressions. A variable can reference source fields, parameters, program dates and variables defined above it.</p>
+          <div class="card mt-6">
+            <div class="card-head"><div><h2>Employee variables</h2><p class="mt-0.5 text-[10px] text-muted">Available to employee metrics, workspace charts and payout</p></div><button class="btn ml-auto">+ Add variable</button></div>
+            <div class="field-row grid-cols-[1.1fr_1fr_100px_minmax(190px,1.5fr)_80px]"><strong>Team average incentive</strong><span class="field-code">team_average_incentive</span><span class="pill pill-neutral">NUMBER</span><div class="expression"><span class="token-source">abm_input.team_average_incentive</span></div><span class="text-center text-positive">Visible</span></div>
+            <div class="field-row grid-cols-[1.1fr_1fr_100px_minmax(190px,1.5fr)_80px]"><strong>Sales achievement</strong><span class="field-code">sales_achievement_percentage</span><span class="pill pill-neutral">NUMBER</span><div class="expression"><span class="token-source">abm_input.sales_achievement_percentage</span></div><span class="text-center text-positive">Visible</span></div>
+            <div class="field-row grid-cols-[1.1fr_1fr_100px_minmax(190px,1.5fr)_80px]"><strong>Has resigned</strong><span class="field-code">has_resigned</span><span class="pill pill-neutral">BOOLEAN</span><div class="expression"><span class="token-source">abm_input.has_resigned</span></div><span class="text-center text-muted">Hidden</span></div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Transaction variables</h2><span class="pill pill-neutral ml-auto">Transaction mode only</span></div>
+            <div class="card-body text-[11px] leading-5 text-muted">Uses the same variable editor at transaction grain. A separate visible-variable list determines which transaction metrics appear in the calculation workspace.</div>
+          </div>
+          <div class="info mt-5"><strong>Supported types:</strong> TEXT, NUMBER, BOOLEAN, DATE, DATETIME and lists of numbers, texts, dates or datetimes.</div>
+        </section>
+
+        <section class="editor-view" data-view-panel="generation">
+          <div class="eyebrow">Block · Eligibility and result</div>
+          <h1 class="view-title">Rules & payout</h1>
+          <p class="view-copy">The selected block mode determines the calculation grain. All configured rules must pass before the incentive amount is evaluated.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>Generation mode</h2><span class="pill pill-blue ml-auto">VOLUME_BASED</span></div>
+            <div class="grid gap-px bg-line md:grid-cols-2">
+              <div class="bg-white p-4"><span class="type-code">VOLUME</span><strong class="mt-2 block">Employee generation</strong><p class="mt-1 text-[11px] leading-5 text-muted">Employee rules + one employee incentive amount.</p></div>
+              <div class="bg-slate-50 p-4"><span class="type-code text-muted">TRANSACTION</span><strong class="mt-2 block">Transaction generation</strong><p class="mt-1 text-[11px] leading-5 text-muted">Primary source + transaction sources + variables + visible variables + rules + amount.</p></div>
+            </div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Eligibility rules</h2><span class="pill pill-neutral ml-auto">ALL must pass</span></div>
+            <div class="field-row grid-cols-[34px_1fr_minmax(260px,1.5fr)_auto]"><span class="grid size-7 place-items-center rounded-full bg-slate-100 font-bold">1</span><strong>Minimum achievement</strong><div class="expression"><span class="token-source">sales_achievement_percentage</span><span>≥</span><span class="token-param">achievement_threshold</span></div><button class="btn">Edit</button></div>
+            <div class="field-row grid-cols-[34px_1fr_minmax(260px,1.5fr)_auto]"><span class="grid size-7 place-items-center rounded-full bg-slate-100 font-bold">2</span><strong>Active employment</strong><div class="expression"><span class="token-source">has_resigned</span><span>=</span><span>false</span></div><button class="btn">Edit</button></div>
+            <div class="border-t border-line bg-slate-50 px-4 py-3"><button class="btn">+ Add rule</button></div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Incentive amount</h2><span class="pill pill-good ml-auto">NUMBER</span></div>
+            <div class="card-body"><span class="label">Expression</span><div class="expression"><span class="token-source">potential_incentive</span></div><p class="mt-2 text-[10px] text-muted">Evaluated only after every rule passes.</p></div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Transaction-mode layout</h2><span class="pill pill-neutral ml-auto">Shown when block mode changes</span></div>
+            <div class="grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
+              <div class="bg-white p-4"><span class="type-code">01</span><strong class="mt-2 block">Primary transaction</strong><p class="field-code mt-1">primaryTransactionSourceKey</p></div>
+              <div class="bg-white p-4"><span class="type-code">02</span><strong class="mt-2 block">Supporting sources</strong><p class="field-code mt-1">transactionSources[]</p></div>
+              <div class="bg-white p-4"><span class="type-code">03</span><strong class="mt-2 block">Transaction variables</strong><p class="field-code mt-1">transactionVariables[]</p></div>
+              <div class="bg-white p-4"><span class="type-code">04</span><strong class="mt-2 block">Visible metrics</strong><p class="field-code mt-1">visibleTransactionVariables[]</p></div>
+              <div class="bg-white p-4"><span class="type-code">05</span><strong class="mt-2 block">Transaction rules</strong><p class="field-code mt-1">rules[]</p></div>
+              <div class="bg-white p-4"><span class="type-code">06</span><strong class="mt-2 block">Amount per row</strong><p class="field-code mt-1">incentiveAmount</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="parameters">
+          <div class="eyebrow">Block · Effective configuration</div>
+          <h1 class="view-title">Parameters</h1>
+          <p class="view-copy">Define typed business inputs once, then maintain effective-dated value sets without changing formulas or rules.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>Parameter schema</h2><button class="btn ml-auto">+ Add parameter</button></div>
+            <div class="field-row grid-cols-[1.2fr_1fr_130px_100px_auto]"><strong>Business Unit</strong><span class="field-code">business_unit</span><span class="pill pill-neutral">string</span><span>Single</span><button class="btn">Edit</button></div>
+            <div class="field-row grid-cols-[1.2fr_1fr_130px_100px_auto]"><strong>Achievement Threshold</strong><span class="field-code">achievement_threshold</span><span class="pill pill-neutral">number</span><span>Single</span><button class="btn">Edit</button></div>
+            <div class="field-row grid-cols-[1.2fr_1fr_130px_100px_auto]"><strong>Manager Multiplier</strong><span class="field-code">manager_multiplier</span><span class="pill pill-neutral">number</span><span>Single</span><button class="btn">Edit</button></div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Effective-dated values</h2><button class="btn ml-auto">+ Add value period</button></div>
+            <div class="field-row grid-cols-[1fr_1fr_2fr_auto]"><div><span class="label">From</span><strong>Program start</strong></div><div><span class="label">To</span><strong>Program end</strong></div><div><span class="label">Configured values</span><span class="text-muted">Business unit · Threshold · Multiplier</span></div><button class="btn">Open</button></div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Built-in program variables</h2></div>
+            <div class="card-body flex flex-wrap gap-2"><span class="option-chip">PROGRAM_START_DATE</span><span class="option-chip">PROGRAM_END_DATE</span><span class="option-chip">TIMELINE_START_DATE</span><span class="option-chip">TIMELINE_END_DATE</span></div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="distribution">
+          <div class="eyebrow">Block · Post-calculation allocation</div>
+          <h1 class="view-title">Incentive distribution</h1>
+          <p class="view-copy">Choose how a transaction result is allocated when a document contains multiple positioned employees. Distribution happens after calculation.</p>
+          <div class="grid gap-4 mt-6 md:grid-cols-2">
+            <button class="type-card selected"><span class="type-code">FULL_TO_ALL</span><strong class="mt-2 block text-[15px]">Full amount to every employee</strong><p class="mt-1 text-[11px] leading-5 text-muted">Default behavior when distribution is omitted.</p></button>
+            <button class="type-card"><span class="type-code">POSITIONED_SPLIT</span><strong class="mt-2 block text-[15px]">Split by employee position</strong><p class="mt-1 text-[11px] leading-5 text-muted">Maintain percentage arrays for document employee counts or an ANY fallback.</p></button>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Positioned split rule layout</h2><span class="pill pill-neutral ml-auto">Shown when selected</span></div>
+            <div class="field-row grid-cols-[160px_1fr_auto]"><span><strong>2 employees</strong><span class="field-code mt-1 block">rule "2"</span></span><div class="flex gap-2"><span class="option-chip">Position 1 · 60%</span><span class="option-chip">Position 2 · 40%</span></div><button class="btn">Edit</button></div>
+            <div class="field-row grid-cols-[160px_1fr_auto]"><span><strong>Fallback</strong><span class="field-code mt-1 block">rule "ANY"</span></span><div class="flex gap-2"><span class="option-chip">Equal split policy</span></div><button class="btn">Edit</button></div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="workspace">
+          <div class="eyebrow">Block · Calculation explanation</div>
+          <h1 class="view-title">Workspace charts</h1>
+          <p class="view-copy">Choose the metrics employees and administrators see when reviewing a calculated incentive. Charts reference the same expression system.</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            <div class="type-card selected"><span class="type-code">amountChart</span><strong class="mt-2 block">Amount</strong><div class="mt-4 text-[25px] font-semibold">₹ —</div><p class="mt-1 text-[10px] text-muted">Label + value expression</p></div>
+            <div class="type-card"><span class="type-code">valueChart</span><strong class="mt-2 block">Value</strong><div class="mt-4 text-[25px] font-semibold">—</div><p class="mt-1 text-[10px] text-muted">Label + value expression</p></div>
+            <div class="type-card"><span class="type-code">gaugeChart</span><strong class="mt-2 block">Gauge</strong><div class="mt-5 h-2 overflow-hidden rounded-full bg-slate-200"><div class="h-full w-[70%] bg-sap"></div></div><div class="mt-2 flex justify-between text-[9px] text-muted"><span>MIN</span><span>THRESHOLD</span><span>MAX</span></div><p class="mt-2 text-[10px] text-muted">Min + max + optional threshold + value</p></div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Configured workspace</h2><button class="btn ml-auto">+ Add chart</button></div>
+            <div class="field-row grid-cols-[1.2fr_130px_1.5fr_auto]"><strong>Total Net Sales</strong><span class="pill pill-neutral">Amount</span><span class="field-code">total_net_sales_amount</span><button class="btn">Edit</button></div>
+            <div class="field-row grid-cols-[1.2fr_130px_1.5fr_auto]"><strong>Percentage of Target Achieved</strong><span class="pill pill-neutral">Gauge</span><span class="field-code">sales_achievement_percentage</span><button class="btn">Edit</button></div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="expressions">
+          <div class="eyebrow">Shared tool · Typed expressions</div>
+          <h1 class="view-title">Expression builder</h1>
+          <p class="view-copy">The same expression composer appears in filters, joins, selections, variables, rules, chart values and incentive amounts. Context controls which fields and result types are valid.</p>
+          <div class="card mt-6">
+            <div class="card-head"><h2>Expression anatomy</h2><span class="pill pill-good ml-auto">Returns BOOLEAN</span></div>
+            <div class="card-body">
+              <div class="expression min-h-16"><span class="token-op">AND</span><span>(</span><span class="token-op">GREATER_THAN_OR_EQUALS</span><span>(</span><span class="token-source">sales_achievement_percentage</span><span>,</span><span class="token-param">achievement_threshold</span><span>)</span><span>,</span><span class="token-op">EQUALS</span><span>(</span><span class="token-source">has_resigned</span><span>, false)</span><span>)</span></div>
+              <div class="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                <div class="type-card selected"><span class="type-code">SOURCE_FIELD</span><strong class="mt-1 block">Source field</strong></div>
+                <div class="type-card"><span class="type-code">SELECTION</span><strong class="mt-1 block">Prior value</strong></div>
+                <div class="type-card"><span class="type-code">VARIABLE</span><strong class="mt-1 block">Program value</strong></div>
+                <div class="type-card"><span class="type-code">CONSTANT</span><strong class="mt-1 block">Literal</strong></div>
+                <div class="type-card"><span class="type-code">OPERATION</span><strong class="mt-1 block">Function</strong></div>
+                <div class="type-card"><span class="type-code">STAR</span><strong class="mt-1 block">All fields</strong></div>
+              </div>
+            </div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Complete operation library</h2><span class="pill pill-neutral ml-auto">71 operations</span></div>
+            <div class="grid gap-px bg-line md:grid-cols-2">
+              <div class="bg-white p-4"><div class="catalog-title">Arithmetic · 6</div><div class="catalog-items"><span class="option-chip">ADD</span><span class="option-chip">SUBTRACT</span><span class="option-chip">MULTIPLY</span><span class="option-chip">DIVIDE</span><span class="option-chip">MODULUS</span><span class="option-chip">ABSOLUTE</span></div></div>
+              <div class="bg-white p-4"><div class="catalog-title">Logical · 3</div><div class="catalog-items"><span class="option-chip">AND</span><span class="option-chip">OR</span><span class="option-chip">NOT</span></div></div>
+              <div class="bg-white p-4 md:col-span-2"><div class="catalog-title">Comparison · 18</div><div class="catalog-items"><span class="option-chip">EQUALS</span><span class="option-chip">NOT_EQUALS</span><span class="option-chip">GREATER_THAN</span><span class="option-chip">LESS_THAN</span><span class="option-chip">GREATER_THAN_OR_EQUALS</span><span class="option-chip">LESS_THAN_OR_EQUALS</span><span class="option-chip">IN</span><span class="option-chip">NOT_IN</span><span class="option-chip">IS_NULL</span><span class="option-chip">IS_NOT_NULL</span><span class="option-chip">LIKE</span><span class="option-chip">NOT_LIKE</span><span class="option-chip">ILIKE</span><span class="option-chip">NOT_ILIKE</span><span class="option-chip">REGEXP</span><span class="option-chip">NOT_REGEXP</span><span class="option-chip">BETWEEN</span><span class="option-chip">NOT_BETWEEN</span></div></div>
+              <div class="bg-white p-4"><div class="catalog-title">Conditional · 5</div><div class="catalog-items"><span class="option-chip">CASE</span><span class="option-chip">COALESCE</span><span class="option-chip">NULLIF</span><span class="option-chip">GREATEST</span><span class="option-chip">LEAST</span></div></div>
+              <div class="bg-white p-4"><div class="catalog-title">Aggregate · 8</div><div class="catalog-items"><span class="option-chip">SUM</span><span class="option-chip">AVERAGE</span><span class="option-chip">MIN</span><span class="option-chip">MAX</span><span class="option-chip">COUNT</span><span class="option-chip">COUNT_DISTINCT</span><span class="option-chip">BOOLEAN_OR</span><span class="option-chip">BOOLEAN_AND</span></div></div>
+              <div class="bg-white p-4"><div class="catalog-title">String · 15</div><div class="catalog-items"><span class="option-chip">CONCAT</span><span class="option-chip">CONCAT_WS</span><span class="option-chip">UPPER</span><span class="option-chip">LOWER</span><span class="option-chip">INITCAP</span><span class="option-chip">TRIM</span><span class="option-chip">LTRIM</span><span class="option-chip">RTRIM</span><span class="option-chip">LENGTH</span><span class="option-chip">SUBSTRING</span><span class="option-chip">LEFT</span><span class="option-chip">RIGHT</span><span class="option-chip">REPLACE</span><span class="option-chip">REVERSE</span><span class="option-chip">POSITION</span></div></div>
+              <div class="bg-white p-4"><div class="catalog-title">Conversion · 9</div><div class="catalog-items"><span class="option-chip">TO_TEXT</span><span class="option-chip">TO_INTEGER</span><span class="option-chip">TO_BIG_INTEGER</span><span class="option-chip">TO_DECIMAL</span><span class="option-chip">TO_BOOLEAN</span><span class="option-chip">TRY_TO_INTEGER</span><span class="option-chip">TRY_TO_BIG_INTEGER</span><span class="option-chip">TRY_TO_DECIMAL</span><span class="option-chip">TRY_TO_BOOLEAN</span></div></div>
+              <div class="bg-white p-4"><div class="catalog-title">Date & time · 6</div><div class="catalog-items"><span class="option-chip">TO_DATE</span><span class="option-chip">TO_TIMESTAMP</span><span class="option-chip">EXTRACT</span><span class="option-chip">DATE_TRUNC</span><span class="option-chip">INTERVAL</span><span class="option-chip">AGE</span></div></div>
+              <div class="bg-white p-4"><div class="catalog-title">Source utility · 1</div><div class="catalog-items"><span class="option-chip">IN_SOURCE_VALUES</span></div></div>
+            </div>
+          </div>
+          <div class="card mt-5">
+            <div class="card-head"><h2>Primitive and list types</h2></div>
+            <div class="card-body flex flex-wrap gap-2"><span class="option-chip">TEXT</span><span class="option-chip">NUMBER</span><span class="option-chip">BOOLEAN</span><span class="option-chip">DATE</span><span class="option-chip">DATETIME</span><span class="option-chip">LIST_OF_NUMBERS</span><span class="option-chip">LIST_OF_TEXTS</span><span class="option-chip">LIST_OF_DATES</span><span class="option-chip">LIST_OF_DATETIMES</span></div>
+          </div>
+        </section>
+
+        <section class="editor-view" data-view-panel="review">
+          <div class="eyebrow">Program · Quality gate</div>
+          <h1 class="view-title">Validate & inspect</h1>
+          <p class="view-copy">Review schema, source lineage, expression types and mode-specific requirements before saving the canonical definition.</p>
+          <div class="grid gap-5 mt-6 xl:grid-cols-[1fr_.8fr]">
+            <div class="card">
+              <div class="card-head"><h2>Validation results</h2><span class="pill pill-good ml-auto">Ready</span></div>
+              <div class="field-row grid-cols-[24px_1fr_auto]"><span class="text-positive">●</span><div><strong>Program source catalog</strong><p class="mt-0.5 text-[10px] text-muted">All block source keys resolve.</p></div><span class="pill pill-good">Pass</span></div>
+              <div class="field-row grid-cols-[24px_1fr_auto]"><span class="text-positive">●</span><div><strong>Source lineage</strong><p class="mt-0.5 text-[10px] text-muted">Transformation references are ordered and acyclic.</p></div><span class="pill pill-good">Pass</span></div>
+              <div class="field-row grid-cols-[24px_1fr_auto]"><span class="text-positive">●</span><div><strong>Expression types</strong><p class="mt-0.5 text-[10px] text-muted">Rules are Boolean; incentive amount is Number.</p></div><span class="pill pill-good">Pass</span></div>
+              <div class="field-row grid-cols-[24px_1fr_auto]"><span class="text-caution">●</span><div><strong>Runtime binding</strong><p class="mt-0.5 text-[10px] text-muted">Prepared document type must exist in the tenant.</p></div><span class="pill pill-warn">Warning</span></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2>Advanced definition</h2><span class="pill pill-neutral ml-auto">Read only</span></div>
+              <div class="card-body"><pre class="max-h-[340px] overflow-auto whitespace-pre-wrap rounded-sm bg-[#071523] p-4 font-mono text-[10px] leading-5 text-slate-200">{
+  "sourceDataTypes": [ … ],
+  "blocks": [
+    {
+      "type": "VOLUME_BASED",
+      "employees": { … },
+      "blockSources": [ … ],
+      "transformationSteps": [ … ],
+      "employeeCalculationSources": [ … ],
+      "employeeCalculationVariables": [ … ],
+      "volumeIncentiveGeneration": { … },
+      "parameters": [ … ],
+      "parametersValues": [ … ],
+      "distribution": { … },
+      "workspaceCharts": [ … ]
+    }
+  ]
+}</pre><button class="btn mt-3">Open full JSON</button></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="inspector border-l border-line bg-white">
+        <div class="sticky top-[91px] max-h-[calc(100vh-91px)] overflow-y-auto">
+          <div class="inspector-block bg-slate-50">
+            <div class="inspector-label">Selected editor</div>
+            <div id="inspector-title" class="mt-2 text-[15px] font-semibold">Definition map</div>
+            <div id="inspector-path" class="mt-1 font-mono text-[10px] text-muted">program</div>
+          </div>
+          <div class="inspector-block">
+            <div class="inspector-label">Expression inputs</div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <span class="option-chip active">Source field</span><span class="option-chip">Selection</span>
+              <span class="option-chip">Variable</span><span class="option-chip">Constant</span>
+              <span class="option-chip">Operation</span><span class="option-chip">Star *</span>
+            </div>
+          </div>
+          <div class="inspector-block">
+            <div class="inspector-label">Operation catalog</div>
+            <div class="mt-2">
+              <div class="catalog-group"><div class="catalog-title">Arithmetic</div><div class="catalog-items"><span class="option-chip">ADD</span><span class="option-chip">SUBTRACT</span><span class="option-chip">MULTIPLY</span><span class="option-chip">DIVIDE</span><span class="option-chip">MODULUS</span><span class="option-chip">ABSOLUTE</span></div></div>
+              <div class="catalog-group"><div class="catalog-title">Logical</div><div class="catalog-items"><span class="option-chip">AND</span><span class="option-chip">OR</span><span class="option-chip">NOT</span></div></div>
+              <div class="catalog-group"><div class="catalog-title">Comparison</div><div class="catalog-items"><span class="option-chip">= / ≠</span><span class="option-chip">&gt; / ≥</span><span class="option-chip">&lt; / ≤</span><span class="option-chip">IN</span><span class="option-chip">NULL</span><span class="option-chip">LIKE</span><span class="option-chip">REGEXP</span><span class="option-chip">BETWEEN</span></div></div>
+              <div class="catalog-group"><div class="catalog-title">Conditional</div><div class="catalog-items"><span class="option-chip">CASE</span><span class="option-chip">COALESCE</span><span class="option-chip">NULLIF</span><span class="option-chip">GREATEST</span><span class="option-chip">LEAST</span></div></div>
+              <div class="catalog-group"><div class="catalog-title">Aggregate</div><div class="catalog-items"><span class="option-chip">SUM</span><span class="option-chip">AVERAGE</span><span class="option-chip">MIN</span><span class="option-chip">MAX</span><span class="option-chip">COUNT</span><span class="option-chip">COUNT_DISTINCT</span><span class="option-chip">BOOLEAN_OR</span><span class="option-chip">BOOLEAN_AND</span></div></div>
+              <div class="catalog-group"><div class="catalog-title">String · date · conversion</div><div class="catalog-items"><span class="option-chip">CONCAT</span><span class="option-chip">TRIM</span><span class="option-chip">SUBSTRING</span><span class="option-chip">REPLACE</span><span class="option-chip">TO_DATE</span><span class="option-chip">DATE_TRUNC</span><span class="option-chip">EXTRACT</span><span class="option-chip">AGE</span><span class="option-chip">TO_*</span><span class="option-chip">TRY_TO_*</span></div></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </body>
+</html>
