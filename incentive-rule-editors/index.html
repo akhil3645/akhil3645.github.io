@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Large Incentive Platforms - Rule / Formula Editors Compared</title>
+<style>
+*{box-sizing:border-box}body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#0f172a;color:#e2e8f0;line-height:1.6}
+header{padding:40px 24px;background:linear-gradient(135deg,#1e293b,#0f172a);border-bottom:1px solid #334155;position:sticky;top:0;z-index:10}
+header h1{margin:0;font-size:28px}header p{color:#94a3b8;max-width:900px}
+nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}nav a{color:#7dd3fc;text-decoration:none;border:1px solid #334155;padding:6px 12px;border-radius:20px;font-size:13px;background:#1e293b}
+main{max-width:1100px;margin:0 auto;padding:24px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin:24px 0}
+.card h2{margin-top:0;color:#fff}.badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:20px;background:#0ea5e9;color:#fff;margin-right:8px}.badge.mature{background:#10b981}.badge.ux{background:#8b5cf6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.mock{background:#0b1220;border:1px solid #475569;border-radius:8px;overflow:hidden;font-size:13px}
+.mock-bar{background:#1e293b;padding:8px 12px;border-bottom:1px solid #334155;color:#94a3b8;font-family:monospace}
+.mock-body{padding:12px}.formula{font-family:ui-monospace,Menlo,Consolas,monospace;background:#000;padding:10px;border-radius:6px;color:#a5f3fc;white-space:pre-wrap;margin:8px 0}
+.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #334155}.kv span:last-child{color:#fff}
+.btn{display:inline-block;margin:6px 8px 0 0;padding:8px 14px;background:#0ea5e9;color:#fff;border-radius:6px;text-decoration:none;font-size:14px}.btn.ghost{background:transparent;border:1px solid #38bdf8;color:#7dd3fc}
+img.real{width:100%;border-radius:8px;border:1px solid #475569;background:#fff}small.note{color:#94a3b8}code{background:#000;padding:2px 6px;border-radius:4px;color:#fcd34d}
+footer{padding:30px;text-align:center;color:#64748b}
+</style>
+</head>
+<body>
+<header>
+<a href="../" style="color:#7dd3fc;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:14px">← Experiments</a>
+<h1>Incentive Calculation Platforms — Rule / Formula Editors</h1>
+<p>Large & mature only: Varicent, CaptivateIQ, Xactly, Salesforce Spiff, SAP Commissions, Oracle ICM. Focus: what the admin actually sees and types. Mock UIs below are simplified recreations to avoid copyrighted screenshots — plus real doc images + official links where allowed.</p>
+<nav>
+<a href="#varicent">Varicent</a><a href="#captivateiq">CaptivateIQ</a><a href="#xactly">Xactly</a><a href="#spiff">Salesforce Spiff</a><a href="#sap">SAP Commissions</a><a href="#oracle">Oracle ICM</a>
+</nav>
+</header>
+<main>
+
+<div class="card" id="varicent">
+<h2><span class="badge mature">ENTERPRISE</span> 1. Varicent — Composer + ELT Pipe Formula Tool</h2>
+<div class="grid">
+<div>
+<p><b>How it works:</b> No single-cell formula bar. You build a calculation pipe in <b>Composer / Varicent ELT</b>: drag Source -&gt; Join -&gt; Filter -&gt; <code>Formula</code> -&gt; Aggregate tools on canvas. Each Formula node has expression editor with functions, operators, constants, field picker.</p>
+<div class="mock"><div class="mock-bar">Composer &gt; Pipe: Q1_Payout_Calc &gt; Formula Tool</div><div class="mock-body">
+<div class="kv"><span>Input fields</span><span>Credit_Amount, Rate, Attainment%</span></div>
+<div class="formula">IF([Attainment%] >= 1.0,
+  [Credit_Amount] * [Rate] * 1.5,  // accelerator
+  [Credit_Amount] * [Rate]
+)</div>
+<small class="note">Functions: Aggregate, Case, Conditional, DateAdd, RunningTotal, WeightedAverage + custom. Validation + unit tests per pipe.</small>
+</div></div>
+<p><a class="btn" href="https://elt.varicent.com/assets/elt-docs/en/varicent-incentives/add-calculation.html" target="_blank">Varicent ELT: Add Calculation docs</a>
+<a class="btn ghost" href="https://elt.varicent.com/assets/elt-docs/en/tools/calculate/formula.html" target="_blank">Formula Tool reference</a>
+<a class="btn ghost" href="https://www.varicent.com/products/incentive-compensation" target="_blank">Varicent ICM overview</a></p>
+</div>
+<div>
+<p><b>Looks like:</b> Alteryx-style visual pipeline, not spreadsheet. Best for IT-owned complex logic, versioned pipes, audit.</p>
+<ul><li>Rule = reusable calculation node in pipe</li><li>Adaptability: very high, but heavier than spreadsheet</li><li>UX: powerful, steeper learning curve</li></ul>
+<small class="note">Source: Varicent ELT public docs.</small>
+</div>
+</div>
+</div>
+
+<div class="card" id="captivateiq">
+<h2><span class="badge ux">BEST UX</span> 2. CaptivateIQ — SmartGrid No-Code Spreadsheet</h2>
+<div class="grid">
+<div>
+<p><b>How it works:</b> Excel-like grid. Each plan = tables (Deals, Attainment, Payout). You add columns with Excel-like formulas that auto-reference rows. Real-time recalc — 6.25T calcs/month claimed. No SQL needed.</p>
+<div class="mock"><div class="mock-bar">SmartGrid &gt; Plan: SaaS_AE_Q1 &gt; Payout Table</div><div class="mock-body">
+<div class="formula">=IF(Attainment >= Quota,
+  Quota*Rate + (Attainment-Quota)*Rate*1.5,
+  Attainment*Rate)</div>
+<div class="kv"><span>Join</span><span>Deals LEFT JOIN Reps ON OwnerID</span></div>
+<div class="kv"><span>Visibility</span><span>Live statement per rep</span></div>
+</div></div>
+<p><a class="btn" href="https://www.captivateiq.com/smartgrid" target="_blank">SmartGrid official page</a>
+<a class="btn ghost" href="https://www.captivateiq.com/comparison/varicent" target="_blank">vs Varicent</a></p>
+</div>
+<div>
+<img class="real" src="https://cdn.prod.website-files.com/5e20acf46e0215232a00fa2f/6a5eccebd6e653aa4d308e99_image%20(4).avif" alt="CaptivateIQ SmartGrid join diagram">
+<small class="note">Real image: CaptivateIQ SmartGrid Left Join diagram (captivateiq.com). If blocked, see mock left.</small>
+<br><br>
+<img class="real" src="https://cdn.prod.website-files.com/5e20acf46e0215232a00fa2f/6a5ecf8a26b4d382026ef760_SmartGrid%20Calculations.avif" alt="SmartGrid calculations scale">
+</div>
+</div>
+</div>
+
+<div class="card" id="xactly">
+<h2><span class="badge mature">MOST MATURE</span> 3. Xactly Incent — Rules + Plan Config Engine</h2>
+<div class="grid">
+<div>
+<p><b>How it works:</b> Classic enterprise ICM: <b>Orders → Credits → Commissions → Payments</b> pipeline. Admin defines Rules (Credit rules, Commission rules) with formula builder + rate tables in Incent Studio. Handles splits, draws, accelerators, multi-currency at volume ($7B/mo claimed).</p>
+<div class="mock"><div class="mock-bar">Xactly Incent &gt; Plan Design &gt; Commission Rule: AE_Accelerator</div><div class="mock-body">
+<div class="kv"><span>Rule Type</span><span>Commission - Formula + Rate Table</span></div>
+<div class="formula">Result = CreditAmount * LookupRate(AttainmentPct)
+// Rate Table: 0-100% = 8%, 100-150% = 12%, 150%+ = 15%</div>
+<small class="note">Plus: Qualifiers, Holds, Clawbacks, AlignStar territory input.</small>
+</div></div>
+<p><a class="btn" href="https://www.xactlycorp.com/products/xactly-incent" target="_blank">Xactly Incent official</a>
+<a class="btn ghost" href="https://www.youtube.com/watch?v=RkKAwj8RS5U" target="_blank">Video: Incent Tutorial</a></p>
+</div>
+<div>
+<ul><li><b>Looks:</b> Tabular admin console, rule list + formula expression + rate table grid. Dated vs Spiff/CaptivateIQ but proven.</li><li>Adaptability: deep, requires comp-ops team. Changes = versioned plan copies.</li><li>UX G2 4.2 — lowest of modern tier, highest scale trust.</li></ul>
+</div>
+</div>
+</div>
+
+<div class="card" id="spiff">
+<h2><span class="badge ux">SALESFORCE NATIVE</span> 4. Salesforce Spiff — Designer: Payout Rules + Datasheets</h2>
+<div class="grid">
+<div>
+<p><b>How it works:</b> <b>Designer = engine room.</b> Plan → Payout Rules (name + Payout Amount field + Effective dates). Amount comes from Datasheet (line-by-line, filtered Salesforce objects) or Worksheet (spreadsheet lump-sum). Formulas are Excel-like with field picker.</p>
+<div class="mock"><div class="mock-bar">Spiff Designer &gt; Plan: AE_2026 &gt; + New Payout Rule</div><div class="mock-body">
+<div class="kv"><span>Payout Rule Name</span><span>New Business 10%</span></div>
+<div class="kv"><span>Payout Amount</span><span>Datasheet.NB_Payout [calc]</span></div>
+<div class="formula">NB_Payout = SUMIFS(Amount,
+  Type="New Business", Stage="Closed Won") * 0.10</div>
+</div></div>
+<p><a class="btn" href="https://trailhead.salesforce.com/content/learn/modules/salesforce-spiff-payout-rules/create-payout-rules-in-salesforce-spiff" target="_blank">Trailhead: Create Payout Rules</a>
+<a class="btn ghost" href="https://trailhead.salesforce.com/content/learn/modules/statements-for-salesforce-spiff-admins/explore-payout-rule-details" target="_blank">Payout Rule Details</a></p>
+</div>
+<div>
+<img class="real" src="https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/salesforce-spiff-payout-rules/create-payout-rules-in-salesforce-spiff/images/6415e595c82ad218e2f9eea9ee252b99_kix.7cxczuxfma6a.png" alt="Spiff payout rule page">
+<small class="note">Real: Trailhead screenshot — Payout Rule Name, Payout Amount, Effective As Of/Until, Total.</small>
+<br><br>
+<img class="real" src="https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/salesforce-spiff-payout-rules/create-payout-rules-in-salesforce-spiff/images/dc6402707e7f86babf1c9d98823cc958_kix.tk61udxixzme.png" alt="Create payout rule from field">
+<small class="note">Real: Create Payout Rule from datasheet/worksheet field.</small>
+</div>
+</div>
+</div>
+
+<div class="card" id="sap">
+<h2><span class="badge mature">SAP ESTATE</span> 5. SAP Commissions (CallidusCloud) — Rules Wizard + Functions</h2>
+<div class="grid">
+<div>
+<p><b>How it works:</b> Pipeline stages: <b>Classify → Allocate → Credit → Measure → Incentive → Pay.</b> Admin uses <b>Rules Wizard (Plan Data &gt; Rules Wizard)</b> to create Deposit / Credit / Measurement / Incentive / Commission rules. Logic = reusable <code>Functions</code> (predefined formulas) written in Excel-like + SQL-ish syntax.</p>
+<div class="mock"><div class="mock-bar">SAP Commissions &gt; Rules Wizard &gt; Incentive Rule</div><div class="mock-body">
+<div class="formula">FUNCTION Incentive_Q1(Transaction):
+  IF Measurement.Result > Quota THEN
+    (Result - Quota)*Rate_Over + Quota*Rate_Base
+  ELSE Result*Rate_Base</div>
+<small class="note">Commission rules calculate per-credit value. Functions reusable across rules.</small>
+</div></div>
+<p><a class="btn" href="https://help.sap.com/docs/PRODUCT_ID/85ce2a3717a644afa2bbd21f70387549/7240d8fc7c231014a804993ce4041860.html" target="_blank">SAP Help: Commission Rules</a>
+<a class="btn ghost" href="https://community.sap.com/t5/human-capital-management-blog-posts-by-sap/sap-commissions-11-tips-to-write-better-and-reusable-functions/ba-p/13564544" target="_blank">11 Tips: Reusable Functions</a>
+<a class="btn ghost" href="https://help.sap.com/docs/SAP_Commissions/85ce2a3717a644afa2bbd21f70387549/7244a4747c231014a804993ce4041860.html" target="_blank">Creating Incentive Rule</a></p>
+</div>
+<div>
+<ul><li><b>Looks:</b> Dense enterprise admin tables + formula text area with function library. Most governance, least modern UX.</li><li>Example functions: <code>Sum(), RateLookup(), Prorate(), CreditCategory()</code></li><li>Adaptability: high if you have SAP comp-ops; slow otherwise.</li></ul>
+</div>
+</div>
+</div>
+
+<div class="card" id="oracle">
+<h2><span class="badge mature">ORACLE ESTATE</span> 6. Oracle Incentive Compensation — Expression Builder (SQL-like)</h2>
+<div class="grid">
+<div>
+<p><b>How it works:</b> Everything is an <b>Expression</b>: reusable SQL-like snippet used in (1) Measure formula = attainment, (2) Incentive formula = earnings, (3) Rate-table inputs. Built in <b>Compensation Plans &gt; Manage Expressions</b> with Expression Builder + predefined PL/SQL functions.</p>
+<div class="mock"><div class="mock-bar">Oracle Fusion &gt; Manage Expressions &gt; Edit Expression</div><div class="mock-body">
+<div class="formula">-- YTD Revenue Attainment
+SUM(Credit.Credit_Amount)
+
+/* Earnings: trued-up bonus */
+Measure.ITD_Output_Achieved * RTR  -- RTR = Rate Table Result</div>
+<div class="kv"><span>Predefined fns</span><span>SUM_VALUE_SET, Rank, RollingAvg, Prorate, YTD_Target</span></div>
+</div></div>
+<p><a class="btn" href="https://docs.oracle.com/en/cloud/saas/incentive-compensation/facmi/incentive-compensation-expressions.html" target="_blank">Oracle Docs: Expressions</a>
+<a class="btn ghost" href="https://docs.oracle.com/en/cloud/saas/sales/facmi/incentive-compensation-predefined-functions.html" target="_blank">Predefined Functions</a>
+<a class="btn ghost" href="https://www.oracle.com/cx/sales/sales-performance-management/incentive-compensation/" target="_blank">Oracle ICM overview</a></p>
+</div>
+<div>
+<ul><li><b>Looks:</b> Formatted tab with // comments (Label field), Invalid flag + View Log link for troubleshooting, Export log to Excel.</li><li>Most technical: expects SQL thinking. Powerful for Finance-owned global plans.</li><li>UX G2 4.0 — lowest, but deepest Oracle Fusion integration.</li></ul>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>Quick take — which editor for you?</h2>
+<p><b>Want spreadsheet freedom?</b> CaptivateIQ SmartGrid or Spiff Worksheets. <b>Want visual data pipeline with governance?</b> Varicent Composer. <b>Want battle-tested enterprise rules + rate tables?</b> Xactly / SAP / Oracle — pick by ecosystem (independent vs SAP vs Oracle).</p>
+<small class="note">Sources: G2 Enterprise Sales Compensation, Forrester Wave SPM for Incentive Compensation Q1 2025, vendor docs linked above. Images: Trailhead (Salesforce) + CaptivateIQ.com via direct link; others recreated as mocks.</small>
+</div>
+
+</main>
+<footer>Published Sep 2026 · sources and vendor docs linked inline · no tracking</footer>
+</body>
+</html>

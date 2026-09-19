@@ -23,4 +23,10 @@ const PAGES = [
     url: "v2-engine-designer/",
     date: "Sep 18, 2026",
   },
+  {
+    title: "Incentive Rule & Formula Editors",
+    desc: "Six large ICM platforms compared · how each plan builder inserts formulas into plans, with real UI images, mock editors and official doc links.",
+    url: "incentive-rule-editors/",
+    date: "Sep 20, 2026",
+  },
 ];
