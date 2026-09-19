@@ -29,4 +29,16 @@ const PAGES = [
     url: "incentive-rule-editors/",
     date: "Sep 20, 2026",
   },
+  {
+    title: "Enterprise ICM Walkthroughs",
+    desc: "Deep dive · Varicent, CaptivateIQ, Xactly, Salesforce Spiff, SAP Commissions, Oracle ICM — plan builders, rule/formula editors and how formulas get into plans.",
+    url: "vendor-walkthroughs/",
+    date: "Sep 20, 2026",
+  },
+  {
+    title: "V2 Builder Prototype",
+    desc: "Working React builder for the V2 engine example program · tool sections, recursive expression editors, Controls⇄Formula toggle, live DSL and IR JSON views.",
+    url: "v2-builder-prototype/",
+    date: "Sep 20, 2026",
+  },
 ];

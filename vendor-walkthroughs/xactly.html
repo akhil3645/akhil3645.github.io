@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Xactly Incent - Plan Design & Formula Editor Walkthrough</title>
+<style>
+body{font-family:Inter,system-ui,Arial;margin:0;background:#0b1120;color:#e2e8f0;line-height:1.65}
+header{padding:32px 24px;background:#1e293b;border-bottom:1px solid #334155}
+header h1{margin:0}header p{color:#94a3b8;max-width:950px}
+main{max-width:1150px;margin:0 auto;padding:24px}
+.card{background:#111c30;border:1px solid #334155;border-radius:12px;padding:22px;margin:24px 0}
+h2{color:#fff}h3{color:#cbd5e1}
+img{width:100%;border-radius:8px;border:1px solid #475569;margin:8px 0;background:#fff}
+small{color:#94a3b8;display:block;margin-bottom:14px}
+.note{background:#451a03;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:6px;margin:12px 0;font-size:14px}
+code{background:#000;color:#fcd34d;padding:2px 5px;border-radius:4px;font-size:13px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:#f59e0b;color:#111;border-radius:12px;padding:2px 10px;margin-right:8px}
+a.btn{display:inline-block;background:#0ea5e9;color:#fff;padding:7px 13px;border-radius:6px;text-decoration:none;font-size:13px;margin:6px 8px 0 0}
+a.ghost{background:transparent;border:1px solid #38bdf8;color:#7dd3fc}
+.step{color:#f472b6;font-weight:600;font-family:monospace}
+</style></head><body>
+<header>
+<a href="./" style="color:#7dd3fc;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:14px">← Walkthroughs</a>
+<h1><span class="tag">RULES ENGINE</span>Xactly Incent — Plan Design &amp; Rule/Formula Editor</h1>
+<p>Most mature pure ICM calculation engine (Vista-owned since 2017; 7× Gartner SPM MQ Leader through the last edition). The examples below are frames from Xactly's own "Building a SPIF" demo on <code>demo1.xactlycorp.com</code> plus Xactly tour stills.</p>
+</div>
+<main>
+
+<div class="card">
+<h2>1. Plan Design module — where everything lives</h2>
+<img src="assets/xactly/xactly-95.png" alt="Xactly Plan Design Rules Library">
+<small>Real UI — Xactly Incent, top nav: Home | Organization | Company Data | <b>Plan Design</b> | Reports | Orders | Results | Document Mgmt | Docs | Data. Plan Design sub-tabs: Quotes | <b>Formulas</b> | <b>Rate Tables</b> | Pay Curves | Lookup Tables | <b>Attainment Measures</b> | <b>Commission Rules</b> | <b>Rules Library</b> | Illustrator Rules | Draws | <b>Plans</b>.</small>
+<p>The <b>Rules Library</b> lists reusable rules with their Rule Type — e.g. <code>New Logo Credit</code>, <code>New Sales Revenue Credit</code>, <code>NMRR Credit</code>, <code>Pilot License Credit</code>, all <code>Direct Credit</code> type. Rules are shared across plans; the Plans tab binds them to payees.</p>
+</div>
+
+<div class="card">
+<h2>2. The rule wizard — 3 steps, conditions + results (not free-text formulas)</h2>
+<p>A rule is built in a wizard. This is how a "SPIF" bonus gets defined, step by step:</p>
+<img src="assets/xactly/xactly-145.png" alt="Rule wizard step 1">
+<small><span class="step">STEP 1 of 3: Define rule name, active dates, and type</span> — Rule Name <code>Big Deal SPIF</code>, Rule Type <code>Bonus</code>, Active Start/End Date (05/18/2020–05/22/2020), Input Type <code>Order Item</code>, Bonus Type <code>Every time</code>, Description, Tags, Rollable On Reporting.</small>
+<img src="assets/xactly/xactly-195.png" alt="Rule wizard steps 2 and 3">
+<small><span class="step">STEP 2 of 3: Define a condition</span> — grid: <code>IF OrderItem.OrderType Equals New Business</code> <b>AND</b> <code>OrderItem.Amount GreaterThanEquals 50000</code>. <span class="step">STEP 3 of 3: Define result(s)</span> — Result Name <code>Big Deal SPIF</code>, Value <code>1000</code>, Value Unit Type <code>USD</code>, plus Hold Period / Hold / Reason Code / Earning Group fields, and New Result / Save Result buttons.</small>
+<div class="note"><b>How the "formula" gets into the plan here:</b> the rule's <b>conditions</b> filter transactions and its <b>results</b> create credits/bonuses. The plan (Plans tab) subscribes to rule results; the engine processes Orders → Credits → Measurements → Incentives → Payments. For arithmetic beyond the wizard's condition/result builder you use Plan Design → <b>Formulas</b> (named formulas) and <b>Commission Rules</b>, and <b>Rate Tables</b> for tier lookups.</div>
+</div>
+
+<div class="card">
+<h2>3. The rest of Plan Design (formula surfaces)</h2>
+<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><img src="assets/xactly/xactly-70.png" alt="Xactly session frame"><small>Early demo frame — navigating to the Rules Library before the rule is created. Rules list is empty until New.</small></div>
+<div><img src="assets/xactly/xactly-120.png" alt="Xactly session frame"><small>Rule authoring session mid-demo; the wizard steps build conditions as the consultant talks through target payout.</small></div>
+</div>
+<p><b>Formulas tab</b> holds named, reusable formulas referenced by rules/rates. <b>Rate Tables</b> hold tiers/rates. <b>Attainment Measures</b> define quota/attainment logic. <b>Commission Rules</b> turn measurements into incentive amounts. <b>Plans</b> assemble components and assign payees — plans don't contain formulas directly; they orchestrate rules and measures that do.</p>
+</div>
+
+<div class="card">
+<h2>4. End-user + admin surfaces</h2>
+<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><img src="assets/xactly/xactly-admin-tour.webp" alt="Xactly admin home"><small>Admin home: announcements, Admin Reports (Login Audit, download file type CSV), and payout summary tiles.</small></div>
+<div><img src="assets/xactly/xactly-rep-tour.webp" alt="Xactly rep attainment"><small>Rep tour still — attainment/earnings view from Xactly's product tour gallery.</small></div>
+</div>
+<img src="assets/xactly/xactly-dashboard.png" alt="Xactly 2026 dashboard">
+<small>From Xactly's 2026 product video: dashboard with Spiff Commission / Spiff Bonus / Spiff Adjustments tiles, "Payroll by Period" chart, and NA / APAC / LATAM payout table; left nav shows Incent, AlignStar, Analytics, Plan Design, Reporting, Calendar.</small>
+</div>
+
+<div class="card">
+<h2>5. Videos &amp; sources</h2>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=ykHEpKZWQrs" target="_blank" style="color:#7dd3fc">Xactly Incent: Building a SPIF | Xactly Quick Chats (3:49, official)</a> — the source of the rule-wizard frames above.</li>
+<li><a href="https://www.youtube.com/watch?v=6-byWzPEx8I" target="_blank" style="color:#7dd3fc">Xactly Incent Date Formulas Tutorial</a> — formula usage.</li>
+<li><a href="https://assets.xactlycorp.com/asset/7bd17b2a-4464-4e95-aa58-486f91516b52/mp4/Product-Video-Xactly-Incent-2026.mp4" target="_blank" style="color:#7dd3fc">Xactly Incent 2026 product video (direct MP4)</a> · <a href="https://assets.xactlycorp.com/asset/e511e0e7-74c1-405e-9e9f-d9d497dc5034/mp4/_Xactly-Manage_Longform.mp4" target="_blank" style="color:#7dd3fc">Manage longform MP4</a></li>
+<li><a href="https://www.xactlycorp.com/products/xactly-incent" target="_blank" style="color:#7dd3fc">Product page</a> · <a href="https://www.xactlycorp.com/product-tours/xactly-incent" target="_blank" style="color:#7dd3fc">Gated tour (email confirm required)</a></li>
+</ul>
+<small>Sources: Xactly official YouTube (Quick Chats — Building a SPIF), xactlycorp.com tour images, Xactly product videos on assets.xactlycorp.com. Rule wizard steps and field names read from the live demo frames.</small>
+</div>
+
+</main></body></html>

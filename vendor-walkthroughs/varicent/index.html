@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Varicent - Full Product Tour Walkthrough (Real UI)</title>
+<style>
+body{font-family:Inter,system-ui,Arial;margin:0;background:#0b1120;color:#e2e8f0;line-height:1.65}
+header{padding:34px 24px;background:#1e293b;border-bottom:1px solid #334155;position:sticky;top:0;z-index:10}
+header h1{margin:0;font-size:26px}header p{color:#94a3b8;max-width:1000px;margin:8px 0 0}
+nav a{color:#7dd3fc;margin-right:14px;text-decoration:none;font-size:14px}
+main{max-width:1150px;margin:0 auto;padding:24px}
+.card{background:#111c30;border:1px solid #334155;border-radius:12px;padding:22px;margin:26px 0}
+h2{color:#fff;margin-top:0}h3{color:#cbd5e1}
+img{width:100%;border-radius:8px;border:1px solid #475569;margin:8px 0}
+small{color:#94a3b8;display:block;margin-bottom:14px}
+.note{background:#172554;border-left:3px solid #3b82f6;padding:10px 14px;border-radius:6px;margin:12px 0;font-size:14px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:#0ea5e9;color:#fff;border-radius:12px;padding:2px 10px;margin-right:8px}
+.tag.ai{background:#8b5cf6}.tag.nc{background:#10b981}.tag.lc{background:#f59e0b}
+ol li,ul li{margin:7px 0}
+a.btn{display:inline-block;background:#0ea5e9;color:#fff;padding:7px 13px;border-radius:6px;text-decoration:none;font-size:13px;margin:6px 8px 0 0}
+a.ghost{background:transparent;border:1px solid #38bdf8;color:#7dd3fc}
+code{background:#000;color:#fcd34d;padding:2px 5px;border-radius:4px;font-size:13px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:860px){.two{grid-template-columns:1fr}}
+.step{color:#f472b6;font-weight:600;font-family:monospace}
+</style></head><body>
+<header>
+<a href="../" style="color:#7dd3fc;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:14px">← Walkthroughs</a>
+<h1>Varicent — Full Product Tour Walkthrough <span class="tag">real UI</span></h1>
+<p>Frames extracted from Varicent's own product tour videos, which the tours page serves as plain MP4s from their CDN (found by inspecting loaded resources). No captcha needed, no fake form. The videos are downloadable from the CDN links below.</p>
+<nav><a href="#videos">Videos</a><a href="#incentives">1. Incentives: plan builder</a><a href="#elt">2. ELT: formula + pipes</a><a href="#lowcode">3. Low-code docs</a><a href="#salesplanning">4. Sales Planning</a></nav>
+</header>
+<main>
+
+<div class="card" id="videos">
+<h2>The source videos (public CDN MP4s)</h2>
+<p>These load on <code>varicent.com/interactive-product-tours</code> before any gate; the form just plays them. Direct links:</p>
+<ul>
+<li><b>Incentives Product Tour</b> — 5:01 · <a href="https://www.varicent.com/hubfs/Product%20tour/Incentives%20Product%20Tour.mp4" style="color:#7dd3fc">CDN link</a></li>
+<li><b>ELT Product Tour</b> — 2:56 · <a href="https://www.varicent.com/hubfs/Product%20tour/ELT%20Product%20Tour.mp4" style="color:#7dd3fc">CDN link</a></li>
+<li><b>Sales Planning Product Tour</b> — 4:53 · <a href="https://www.varicent.com/hubfs/Product%20tour/Sales%20Planning%20Product%20Tour.mp4" style="color:#7dd3fc">CDN link</a></li>
+<li><b>Seller Insights Product Tour</b> — 7:35 · <a href="https://www.varicent.com/hubfs/Product%20tour/Seller%20Insights%20Product%20Tour.mp4" style="color:#7dd3fc">CDN link</a></li>
+</ul>
+</div>
+
+<div class="card" id="incentives">
+<h2><span class="tag nc">no-code</span><span class="tag ai">AI</span> 1. Incentives tour — plan design → calculation → test → explain</h2>
+<img src="inc-title.png" alt="Incentives tour title"><small>0:30 — tour opening: "One Canvas for Every Plan · Test, Explain, and Reuse with Ease · Build Faster with Built-In Intelligence"</small>
+
+<h3>Step 1 — Requirements workflow (the plan "spec" before build)</h3>
+<img src="inc-requirement.png" alt="Edit requirement"><small>1:10 — <span class="step">Edit requirement → Description</span>: title "2.7 Review, Dispute &amp; Exception Handling", plus rich-text bullets defining dispute routing, escalation, audit trail. Right rail: <b>Link to Designer objects</b> (folders / calculation outputs / tables) — requirements tie to what gets built.</small>
+<img src="inc-requirement-details.png" alt="Requirement details"><small>1:40 — <span class="step">Details</span> tab: ID, last-updated by/on, Customer approval, Status, Assignee, linked documents (System Requirements Specification.docx).</small>
+
+<h3>Step 2 — Designer: where plans are built</h3>
+<img src="inc-designer-sidebar.png" alt="Designer sidebar"><small>2:10 — <b>Designer</b> sidebar: Data &amp; Hierarchies, Plans - Approach 1, Plans - Approach 2, Post Plan Logic. Every plan artifact lives in these folders.</small>
+
+<h3>Step 3 — Calculation canvas (the plan logic, no formulas typed)</h3>
+<img src="inc-calc-ai.png" alt="Calculation canvas with AI assistant"><small>2:40 — <span class="step">Designer → Calculation</span>. Left: canvas with tool node "AE Plan Credits" + <b>Run calculation</b>. Right: <b>Designer Assistant</b> — admin describes the rule in plain English ("Calculate the Q4 2025 one-time tiered bonus for SERVICES based on quarterly credit, exclude Treadmill; Tier 0 &lt;$20K → $0 ... Tier 3 &gt;$100K → $5,000"). Assistant builds the tool chain.</small>
+<div class="note"><b>This is the no-code calc builder.</b> The assistant turns the prompt into configurable tools on the canvas — each one has a form you can inspect/edit, not hidden logic.</div>
+
+<h3>Step 4 — Filter tool config</h3>
+<img src="inc-filter-tool.png" alt="Filter tool config"><small>3:10 — <span class="step">Q4 2025 SERVICES (exclude Treadmill) · Filter tool</span>: visual conditions — Date ≥ 2025-10-01 <b>AND</b> Date ≤ 2025-12-31 <b>AND</b> Component = SERVICES ... (and ProductName not Treadmill). Right panel lists every tool the assistant added.</small>
+
+<h3>Step 5 — Case tool (tiering logic, no formula syntax)</h3>
+<img src="inc-case-tool.png" alt="Case tool tiers"><small>3:30 — <span class="step">Assign Services tier (Q4 2025) · Case tool</span>: New column <code>Tier</code>, Default <code>Unknown</code>. Cases: Tier 0 = SumTotalCreditValue &lt; 20000; Tier 1 = ≥20000...; Tier 2 = ≥50000...; Tier 3 = ≥100000. Canvas shows the chain: quarterly credit → tier → bonus.</small>
+
+<h3>Step 6 — Change Type + Select columns</h3>
+<img src="inc-changetype-tool.png" alt="Change type tool"><small>3:50 — <span class="step">Commission to number · Change Type tool</span>: target column <code>SumCommission</code> → Number. Pipeline visible: tier → one-time bonus → commission → Bonus Payments.</small>
+<img src="inc-select-columns.png" alt="Select columns"><small>4:10 — <span class="step">Output columns · Select tool</span>: PayeeID, PayeeName, Component, Tier, SumTotalCreditValue, SumCommission. AI summary: "Created a Q4 2025 one-time tiered bonus for SERVICES based on quarterly total CreditValue, excluding ProductName containing Treadmill."</small>
+
+<h3>Step 7 — Test + preview data</h3>
+<img src="inc-tests-preview.png" alt="Tests and data preview"><small>4:30 — <b>Tests</b> panel: "We didn't find any tests — Create a test to get started." Bottom: <span class="step">Data</span> preview table — rows like P2010 Dan Huddie, SERVICES, Tier 3, 113531.84, 5000; P2011 Betty Campbell, Tier 2, 66052.03, 2000. Preview = up to 100 sampled rows before you run.</small>
+
+<h3>Step 8 — Explain (plain-English payout logic)</h3>
+<img src="inc-explain.png" alt="Explain panel"><small>4:50 — <span class="step">Select a tool</span> + right panel explaining the rule: "What's excluded — any credit tied to Treadmill is not included" and "How your bonus amount is determined — Tier 0 ... Tier 3: $100,000+ → $5,000". This is the audit/explain layer for comp disputes.</small>
+<div class="note"><b>Plan-change flow in one canvas:</b> ask → tool chain appears → tune each tool's form → test with preview → explain to stakeholders → run calculation.</div>
+</div>
+
+<div class="card" id="elt">
+<h2><span class="tag lc">low-code</span><span class="tag ai">AI</span> 2. ELT tour — pipes, joins, and the formula/expression tool</h2>
+<img src="elt-title.png" alt="ELT tour title"><small>0:30 — ELT opening: "Connector first seamless data integration · AI-assisted pipe analyses and builds · Auto generated testing and documentation".</small>
+
+<h3>Step 1 — Import / connectors</h3>
+<img src="elt-import.png" alt="Import data"><small>1:00 — <span class="step">Data → Import data</span>: drag-drop CSV/XLS/XLSX, plus 62 third-party sources (25 managed): Varicent Incentives, Varicent Sales Planning, Google Sheets, Salesforce, Workday, Snowflake...</small>
+
+<h3>Step 2 — Pipe canvas</h3>
+<img src="elt-pipe-canvas.png" alt="Pipe canvas"><small>1:30 — <span class="step">Pipes → Transaction Territory Crediting</span>: node canvas with SourceData / TerritoryRules / TerritoryAssignment. Toolbar: Tool, Blueprint, Undo/Redo, Copy, <b>Build</b>, <b>Charts</b>. ELT Assistant reads the target logic ("filter valid opportunities, inner join on territory rules where CloseDate between EffStart_ and EffEnd_...").</small>
+
+<h3>Step 3 — Filter tool (config form)</h3>
+<img src="elt-filter.png" alt="Filter tool"><small>2:00 — <span class="step">Valid Opportunities · Filter tool</span>: conditions built with dropdowns — CloseDate Is Not Null AND CloseDate ≥ CreateDate AND Amount &gt; 0 AND Discount ... Preview tab under it.</small>
+
+<h3>Step 4 — Join tools</h3>
+<img src="elt-join1.png" alt="Join tool 1"><small>2:20 — <span class="step">Join Territory Rules · Join tool</span>: Inner Join, AccountID = AccountID, CloseDate ≥ EffStart_, CloseDate ≤ EffEnd_.</small>
+<img src="elt-join2.png" alt="Join tool 2"><small>2:40 — <span class="step">Join Territory Allocations · Join tool</span>: TerritoryID = Territory, plus the same date-window conditions.</small>
+
+<h3>Step 5 — Export + full pipe + data preview</h3>
+<img src="elt-export.png" alt="Export tool"><small>3:00 — <span class="step">Export credited opportunities · Export tool</span>: Connection = Output to CSV, buttons <b>Schedule export</b> / <b>Export now</b>.</small>
+<img src="elt-pipe-full.png" alt="Full pipe with data"><small>3:20 — Full pipe: SourceData → Valid Opportunities → Join Territory Rules → Join Territory Allocations → Export. Data tab preview (100 of 142): OpportunityID, LineID, AccountID, Type, Stage, CreateDate, Age, Currency, Amount, Product...</small>
+
+<h3>Step 6 — Auto documentation</h3>
+<img src="elt-docs.png" alt="Auto documentation"><small>4:10 — <b>Documentation</b> side panel: "This pipe enriches Opportunities with Territory-based crediting information by filtering for valid opportunities, joining with territory rules... exporting the final dataset for downstream incentives calculations." + Pipe Requirements. Auto-generated from the pipe graph.</small>
+</div>
+
+<div class="card" id="lowcode">
+<h2><span class="tag lc">low-code</span> 3. The Formula / Expression tool (docs UI)</h2>
+<p>The ELT tour video doesn't open the Formula tool itself; these are its public docs pages, showing exactly what the editor looks like:</p>
+<img src="docs-add-calculation.png" alt="Add calculation docs"><small>ELT docs — <span class="step">Composer → Palette → Varicent ELT → Add calculation</span>: name + description + Save, then the calculation becomes a node you configure.</small>
+<img src="docs-formula-tool.png" alt="Formula tool docs"><small>ELT docs — <span class="step">Formula tool</span>: Input (which column set feeds it), Configuration (output column + expression), and the full <b>Functions / Operators / Constants</b> reference list (IF, CASE, Conditional, DateAdd/DateDiff, RunningTotal/RunningAverage, WeightedAverage, Lag, MergeColumns, ...).</small>
+<div class="note"><b>So the two editors in the product:</b><br>
+• <b>No-code</b>: Incentives Designer canvas — drag/ask, configure tools (Filter, Case, Change Type, Join, Select, Export) via forms, test &amp; explain in place. This is what a comp admin uses daily.<br>
+• <b>Low-code</b>: ELT <code>Formula</code> tool — an expression editor over the pipe, with the function library above, for anything the tool forms can't express.</div>
+<p><a class="btn" href="https://elt.varicent.com/assets/elt-docs/en/tools/calculate/formula.html" target="_blank">Formula tool docs</a>
+<a class="btn ghost" href="https://elt.varicent.com/assets/elt-docs/en/varicent-incentives/add-calculation.html" target="_blank">Add calculation docs</a>
+<a class="btn ghost" href="https://elt.varicent.com/assets/elt-docs/en/varicent-incentives/add-calculation.html" target="_blank">ELT docs home</a></p>
+</div>
+
+<div class="card" id="salesplanning">
+<h2>4. Bonus: Sales Planning + Seller Insights tours</h2>
+<p>Sales Planning and Seller Insights tour videos are available from the same CDN directory if you want them later. Highlights:</p>
+<ul>
+<li><b>Sales Planning</b> (4:53): territory/quota modeling, scenario comparison, AI impact assessment.</li>
+<li><b>Seller Insights</b> (7:35): seller-facing statements, alerts, dispute/inquiry workflow.</li>
+</ul>
+<small>All 4 MP4s are downloaded locally; ask me and I'll annotate these too.</small>
+</div>
+
+</main>
+<footer style="padding:26px;text-align:center;color:#64748b">Local walkthrough · frames from Varicent public tour MP4s · captured 2026</footer>
+</body></html>

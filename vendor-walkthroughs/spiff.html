@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Salesforce Spiff - Designer & Formula Walkthrough</title>
+<style>
+body{font-family:Inter,system-ui,Arial;margin:0;background:#0b1120;color:#e2e8f0;line-height:1.65}
+header{padding:32px 24px;background:#1e293b;border-bottom:1px solid #334155}
+header h1{margin:0}header p{color:#94a3b8;max-width:950px}
+main{max-width:1150px;margin:0 auto;padding:24px}
+.card{background:#111c30;border:1px solid #334155;border-radius:12px;padding:22px;margin:24px 0}
+h2{color:#fff}h3{color:#cbd5e1}
+img{width:100%;border-radius:8px;border:1px solid #475569;margin:8px 0;background:#fff}
+small{color:#94a3b8;display:block;margin-bottom:14px}
+.note{background:#172554;border-left:3px solid #3b82f6;padding:10px 14px;border-radius:6px;margin:12px 0;font-size:14px}
+code{background:#000;color:#fcd34d;padding:2px 5px;border-radius:4px;font-size:13px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:#10b981;color:#fff;border-radius:12px;padding:2px 10px;margin-right:8px}
+a.btn{display:inline-block;background:#0ea5e9;color:#fff;padding:7px 13px;border-radius:6px;text-decoration:none;font-size:13px;margin:6px 8px 0 0}
+a.ghost{background:transparent;border:1px solid #38bdf8;color:#7dd3fc}
+.step{color:#f472b6;font-weight:600;font-family:monospace}
+</style></head><body>
+<header>
+<a href="./" style="color:#7dd3fc;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:14px">← Walkthroughs</a>
+<h1><span class="tag">DESIGNER</span>Salesforce Spiff — Plan Builder &amp; Formula Editor</h1>
+<p>Salesforce-owned since Feb 2024 (~$419M). Native ICM inside Sales Cloud. The engine room is <b>Designer</b>: plans hold payout rules; rules point at calculated fields on datasheets/worksheets where formulas actually live. Screenshots are official Trailhead/vendor documentation UI.</p>
+</header>
+<main>
+
+<div class="card">
+<h2>1. Designer — Plans and Data tabs</h2>
+<img src="assets/spiff/designer-home.png" alt="Spiff Designer home">
+<small>Designer landing: Plans tab in the left panel with folders for plans, worksheets, datasheets, tables. Context selector top-left.</small>
+<img src="assets/spiff/data-tab.png" alt="Designer Data tab">
+<small>Data tab: source objects and their fields (Fields/Filters) — this is where Salesforce objects are exposed to calculations. Calculated fields you create appear alongside source fields.</small>
+</div>
+
+<div class="card">
+<h2>2. The plan page and payout rules</h2>
+<img src="assets/spiff/plan-page.png" alt="Spiff plan page">
+<small>Real UI — plan "<b>Spiff Corporate AE Plan</b>": tabs <span class="step">ASSIGNED USERS | RULES | CUSTOM FIELDS</span>, with <b>Assign Users</b>, Active/All filters, Download, Search, and the Plan Assignments table (Name, Email, Role, Effective As Of/Until). Top nav: COMMISSIONS, TEAMS, PLANS, QUOTAS, DOCUMENTS, DATA SOURCES, REPORTING, ADMIN, and the <b>DESIGNER</b> button.</small>
+<img src="assets/spiff/plan-view.png" alt="Plan view with payout rules">
+<small>Plan View showing multiple **payout rules** attached to the plan. A rule has: name, Payout Amount (a field from a datasheet/worksheet), Effective As Of/Until, and a Payout Rule Total. What-If? and Ghost Rule variants exist. Rules can be created from a field via right panel <span class="step">PAYOUT RULE | Create Payout Rule</span>.</small>
+</div>
+
+<div class="card">
+<h2>3. Where formulas live — datasheets and worksheets</h2>
+<img src="assets/spiff/datasheet.png" alt="Spiff datasheet">
+<small><b>Datasheet</b>: pick a Salesforce object + data filter, then add fields — line-by-line per-record calculations. Select a cell/field and type the formula in the <b>formula bar</b>; names turn green/yellow with tooltips.</small>
+<img src="assets/spiff/worksheet.png" alt="Spiff worksheet calculations">
+<small><b>Worksheet</b>: spreadsheet for lump-sum/single-value calculations (e.g. quota, rate, totals) feeding rules. Cross-sheet references look like <code>WorksheetB!TotalARR</code> or <code>DatasheetA!ARR</code>.</small>
+<img src="assets/spiff/function-library.png" alt="Spiff function library">
+<small>The right-panel <b>function library</b> opens on any function with description/syntax/args — here <code>tier_payout</code>. Functions include <code>tier_payout(rangeTableValue, table, tiebreak, "returnColumn")</code>, <code>sum()</code>, <code>if()</code>, <code>filter()</code>, <code>contains()</code>, <code>amounts_from()</code>, <code>mpercent()</code>.</small>
+<img src="assets/spiff/tier-formula.png" alt="Tier payout column formula">
+<small>A <code>RepCommissionPayout</code> column = ARR × tier rate — the formula shown inline in the field editor.</small>
+</div>
+
+<div class="card">
+<h2>4. Rate/accelerator tables and how formulas consume them</h2>
+<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><img src="assets/spiff/range-table.png" alt="Range table"><small><b>Range table</b>: Lower Bound / Upper Bound rows with year-named rate columns (e.g. 2024/2025 rates) — the table <code>tier_payout</code> reads.</small></div>
+<div><img src="assets/spiff/accelerator-table.png" alt="Accelerator table"><small>Accelerator table used by the tier formula.</small></div>
+</div>
+<img src="assets/spiff/tier-payout-formula.png" alt="tier_payout with dynamic year column">
+<small><code>tier_payout(...)</code> with a dynamic return column (e.g. <code>CurrentYear</code>) so the rate table switches columns per period.</small>
+<div class="note"><b>How formulas get inserted into plans (Spiff model):</b> formula → a calculated field/column on a <b>datasheet</b> (line-by-line) or <b>worksheet</b> (lump-sum) → the plan's <b>payout rule</b> sets its <b>Payout Amount</b> to that field → the rule pays out on effective dates. Example chain: <code>TieredARRPayout_Payout = ARR__c * EarnedRate_…</code>, where <code>EarnedRate_… = tier_payout(TotalARRAttainment_…, SpiffCorporateAE_Table, false, "2024 CorpAE Rates")</code>.</div>
+</div>
+
+<div class="card">
+<h2>5. Trace view — click any payout and see the math</h2>
+<img src="assets/spiff/formula-trace.png" alt="Spiff formula trace">
+<small>Real trace of a payout: <b>Payout Rule</b> "Tiered ARR Payout" resolves to <code>TieredARRPayout_Payout = USD 1216.98</code>; its <b>Variable</b> shows <code>ARR__c * TieredARRPayout_Worksheet|EarnedRate_TieredARRPayout = $20,283.00 * 6.00%</code>; <code>EarnedRate</code> expands to <code>tier_payout(TotalARRAttainment_TieredARRPayout, SpiffCorporateAE_Table, false, "2024 CorpAE Rates") = 0.06</code>; the <b>Table</b> shows the actual tiers (Tier 2 50–100% → 6%, Tier 1 → 4%, Tier 3 100%+ → 8–10%). Every step is clickable.</small>
+<img src="assets/spiff/record-trace.png" alt="Deal-level record trace">
+<small>Deal-level trace: Commission, Deal Amount, Deal Booking Date, Split Percent and Split Amount, ARR, Total Contract Value, Contract Length, and the calculated <code>CommissionOnPayment_CommissionRate</code> (3.00%) and <code>CommissionOnPayment_Commission</code> (USD 1132.38).</small>
+<img src="assets/spiff/rule-trace.png" alt="Rule trace view">
+<small>Rule Trace view in Designer — the vertical calculation chain for a payout rule (same mechanism, admin-side).</small>
+</div>
+
+<div class="card">
+<h2>6. Learn more</h2>
+<p><a class="btn" href="https://trailhead.salesforce.com/content/learn/modules/introduction-to-salesforce-spiff-designer" target="_blank">Trailhead: Spiff Designer</a>
+<a class="btn ghost" href="https://trailhead.salesforce.com/content/learn/modules/salesforce-spiff-payout-rules" target="_blank">Payout Rules module</a>
+<a class="btn ghost" href="https://trailhead.salesforce.com/content/learn/modules/statements-for-salesforce-spiff-admins" target="_blank">Statements module</a>
+<a class="btn ghost" href="https://www.youtube.com/watch?v=6TiBxBFUQec" target="_blank">Salesforce demo (1:22)</a></p>
+<small>Sources: Trailhead modules (Introduction to Salesforce Spiff Designer, Payout Rules, Statements), Salesforce Help articles (sales.spiff_functions, sales.spiff_datasheets_create, sales.spiff_worksheets_and_calculations_create_add), salesforce.com newsroom. All screenshots from vendor CDN images embedded in Trailhead.</small>
+</div>
+
+</main></body></html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAP Commissions - Rules Wizard & Functions Walkthrough</title>
+<style>
+body{font-family:Inter,system-ui,Arial;margin:0;background:#0b1120;color:#e2e8f0;line-height:1.65}
+header{padding:32px 24px;background:#1e293b;border-bottom:1px solid #334155}
+header h1{margin:0}header p{color:#94a3b8;max-width:950px}
+main{max-width:1150px;margin:0 auto;padding:24px}
+.card{background:#111c30;border:1px solid #334155;border-radius:12px;padding:22px;margin:24px 0}
+h2{color:#fff}h3{color:#cbd5e1}
+img{width:100%;border-radius:8px;border:1px solid #475569;margin:8px 0;background:#fff}
+small{color:#94a3b8;display:block;margin-bottom:14px}
+.note{background:#172554;border-left:3px solid #3b82f6;padding:10px 14px;border-radius:6px;margin:12px 0;font-size:14px}
+code{background:#000;color:#fcd34d;padding:2px 5px;border-radius:4px;font-size:13px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:#8b5cf6;color:#fff;border-radius:12px;padding:2px 10px;margin-right:8px}
+a.btn{display:inline-block;background:#0ea5e9;color:#fff;padding:7px 13px;border-radius:6px;text-decoration:none;font-size:13px;margin:6px 8px 0 0}
+a.ghost{background:transparent;border:1px solid #38bdf8;color:#7dd3fc}
+.step{color:#f472b6;font-weight:600;font-family:monospace}
+</style></head><body>
+<header>
+<a href="./" style="color:#7dd3fc;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:14px">← Walkthroughs</a>
+<h1><span class="tag">FUNCTIONS</span>SAP Commissions — Rules Wizard &amp; Expression Editor</h1>
+<p>Ex-CallidusCloud, now SuccessFactors Incentive Management. Strong governance/audit; pipeline model. Images from official SAP Learning course UI screenshots and SAP Community blog captures.</p>
+</header>
+<main>
+
+<div class="card">
+<h2>1. The pipeline the rules feed</h2>
+<img src="assets/sap/pipeline-diagram.jpg" alt="SAP Commissions pipeline stages">
+<small>Calculation stages diagram. Runs execute as <b>Compensate and Pay</b>: <b>Classify → Allocate → Reward → Pay</b> (with Post and Finalize as additional stages). Data flows Transaction → Credit → Measurement → Incentive → Deposit → Payment.</small>
+<img src="assets/sap/pipeline-stages.png" alt="Compensate and Pay wizard">
+<small>Compensate &amp; Pay wizard (official SAP Learning screenshot): steps Periods → Stage Types → Transactions → Advanced Logging → Scheduling, with stage checkboxes (Classify / Allocate / Reward / Pay).</small>
+</div>
+
+<div class="card">
+<h2>2. Building rules — Rules Wizard (Plan Data menu)</h2>
+<p>Rules live under <b>Plan Data</b> (Plans Wizard + Rules Wizard). Rules can be built standalone in the Rules Wizard, or inline: Plans Wizard → select plan → Edit → e.g. Credit Rule → <b>Create New Rule</b>.</p>
+<img src="assets/sap/credit-rule.png" alt="SAP Credit rule">
+<small><b>Credit rule</b> "DCR_Product Sales Credits :: Direct Transaction Credit" — sections <span class="step">Rule Basics → Transactions → Credits → Output</span>; the UI asks "Who should get the credits?" and maps transaction fields to credit outputs.</small>
+<img src="assets/sap/credit-advanced.png" alt="Advanced credit options">
+<small><b>Advanced Options</b> (Hold, Duplication, Rollup, Generic Columns) with expression boxes for Duplication formula and Rollup credits — this is where behavior beyond simple mapping is written.</small>
+<h3>Incentive rules</h3>
+<img src="assets/sap/incentive-rule.png" alt="SAP Incentive rule">
+<small><b>Incentive rule</b> "IR_Per Credit Commission :: Aggregated Commission" — "What kind of Incentive rule do you want to create?" (Aggregated vs Per-Credit), Effective Dates, Calendar.</small>
+<img src="assets/sap/incentive-rule-2.png" alt="SAP Incentive rule second screenshot">
+<small>Second incentive-rule screen from the same official lesson: rule steps/measurement wiring.</small>
+</div>
+
+<div class="card">
+<h2>3. The expression editor — Functions and Formulas</h2>
+<img src="assets/sap/expression-editor.jpg" alt="SAP Commissions expression editor">
+<small>Real editor UI (SAP Community capture): <b>Expression</b> box with the formula text, <b>Return Type</b> = String, a <b>Rule Usage</b> panel listing every rule context the formula is valid in, and an autocomplete dropdown of <code>function:</code> entries (Concatenate Two Strings, If Then Else, Query for String, Trim String…).</small>
+<img src="assets/sap/date-functions.jpg" alt="Date functions editor">
+<small>Date function variant of the same editor.</small>
+<div class="note"><b>Functions vs Formulas:</b> <i>Functions</i> are predefined reusable operations; a <i>formula</i> is a named reusable object storing an expression, usable from rules, rate tables, lookup tables and other formulas. <i>Formulaic expressions</i> live only inside the current rule.<br><br>
+<b>How formulas get inserted into plans:</b> the formula text is written in per-rule <b>expression fields</b> (e.g. the Condition tab's Show Window Editor, or an amount/output field). The editor has Return Type, Expression pane, Function pane, and the <b>Legal Moves Editor</b> (Literals / Functions / Data Fields / References) — typing <code>n:</code> lists functions, <code>*</code> lists legal moves. Saved formulas carry <b>Rule Usage</b> (valid contexts) and an <b>Associations</b> tab showing which rules/elements use them.</div>
+<p><b>Example syntax</b> (from SAP's function reference):<br>
+<code>Prorate percentage = Measure Period Overlap Percentage [((Position Processing Start Date (true)), (Positions Processing End Date (true)), (Fiscal Date (quarter, 0, Start Date)), (Fiscal Date (month, 0, End Date)), month, false)]</code><br>
+Other functions: <code>Sum Prior Quotas or Fixed Values</code>, <code>Sum Prior Measurements</code>, <code>Sum Measurements to Date</code>, <code>Sum Prior Incentives</code>, <code>Max and Min</code>, <code>Round</code>, <code>Absolute</code>, <code>If Then Else</code>, <code>Fiscal Date</code>, <code>Transaction.Classifier()</code>.</p>
+</div>
+
+<div class="card">
+<h2>4. Watch it</h2>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=KKeaRr7lLKg" target="_blank" style="color:#7dd3fc">SAP official demo — SAP Sales Commission (2:19)</a></li>
+<li><a href="https://www.youtube.com/watch?v=AvINo6OZyxo" target="_blank" style="color:#7dd3fc">ASAR America — SAP Commissions demo (56:49)</a></li>
+<li><a href="https://www.youtube.com/watch?v=86ZsOH2Lxa8" target="_blank" style="color:#7dd3fc">SpectrumTek — Credits and Credit Types (3:34)</a></li>
+<li><a href="https://learning.sap.com/courses/implementing-and-administering-sap-incentive-management" target="_blank" style="color:#7dd3fc">SAP Learning course (screenshot source)</a></li>
+</ul>
+<small>Sources: learning.sap.com "Implementing and Administering SAP Incentive Management" (official screenshots), SAP Community blogs (String Functions, Calculation Stages), SAP Help Portal PDFs (Admin Design Guide). Note: help.sap.com renders client-side; PDF docs were used for text, SAP Learning/Community for images.</small>
+</div>
+
+</main></body></html>

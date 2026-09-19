@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CaptivateIQ - Plan Builder & Formula Editor Walkthrough</title>
+<style>
+body{font-family:Inter,system-ui,Arial;margin:0;background:#0b1120;color:#e2e8f0;line-height:1.65}
+header{padding:32px 24px;background:#1e293b;border-bottom:1px solid #334155}
+header h1{margin:0}header p{color:#94a3b8;max-width:950px}
+main{max-width:1150px;margin:0 auto;padding:24px}
+.card{background:#111c30;border:1px solid #334155;border-radius:12px;padding:22px;margin:24px 0}
+h2{color:#fff}h3{color:#cbd5e1}
+img{width:100%;border-radius:8px;border:1px solid #475569;margin:8px 0;background:#fff}
+small{color:#94a3b8;display:block;margin-bottom:14px}
+.note{background:#172554;border-left:3px solid #3b82f6;padding:10px 14px;border-radius:6px;margin:12px 0;font-size:14px}
+code{background:#000;color:#fcd34d;padding:2px 5px;border-radius:4px;font-size:13px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:#10b981;color:#fff;border-radius:12px;padding:2px 10px;margin-right:8px}
+a.btn{display:inline-block;background:#0ea5e9;color:#fff;padding:7px 13px;border-radius:6px;text-decoration:none;font-size:13px;margin:6px 8px 0 0}
+a.ghost{background:transparent;border:1px solid #38bdf8;color:#7dd3fc}
+.step{color:#f472b6;font-weight:600;font-family:monospace}
+</style></head><body>
+<header>
+<a href="./" style="color:#7dd3fc;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:14px">← Walkthroughs</a>
+<h1><span class="tag">NO-CODE</span>CaptivateIQ — Plan Builder &amp; Formula Editor</h1>
+<p>Forrester Wave Leader (Q1 2025). No-code, spreadsheet-like SmartGrid. ~800+ customers, $2B+ commissions processed. What follows is the real admin UI per CaptivateIQ's own product vignettes and public tour.</p>
+</header>
+<main>
+
+<div class="card">
+<h2>1. Plan creation — the blueprint wizard</h2>
+<p>Admins configure a plan through a step wizard. Step chaining in the public tour: <span class="step">General settings → Credits → Additional columns → Input parameters → Summary</span>.</p>
+<img src="assets/ciq/navattic-plans.png" alt="CaptivateIQ flat rate blueprint wizard">
+<small>Real UI — "Configure your flat rate Flat Rate: Services blueprint": Payout frequency (fixed frequency Monthly + Fiscal year start month, or custom frequency from a table column), Commission rate (same rate for all payees, or unique per payee), Quota and attainment section below. Cancel / Previous / Next footer.</small>
+<h3>Credit mapping</h3>
+<img src="assets/ciq/navattic-credits.png" alt="CaptivateIQ credit mapping">
+<small>Plan credits mapping wizard — choose the Credit ID, credit date and payee fields from source data. This is how deal/booking rows become commissionable credits for the plan.</small>
+<h3>Tiered vs flat blueprint configuration</h3>
+<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><img src="assets/ciq/navattic-tiers.png" alt="Tiered rate config"><small>Tiered rate config: tier bands with conditions like <code>Tier 1 [Cumulative commissionable total] &lt; [Tier 2 target]</code> and rates as % or multiplier, per tier.</small></div>
+<div><img src="assets/ciq/navattic-flat.png" alt="Flat rate blueprint"><small>Flat-rate blueprint: payout frequency + fiscal year start (or custom frequency column), same-rate vs per-payee rate.</small></div>
+</div>
+</div>
+
+<div class="card">
+<h2>2. The calculation workbook (where plans live)</h2>
+<img src="assets/ciq/gpb-04.avif" alt="Calculation workbook">
+<small>The plan workbook: tabs <b>Overview, Payout dates, Employee assumptions, Calculation workbook, Statement designer, What-if tool</b>. Bulk edit columns; "Powered by SmartGrid". The "Calculation workbook" holds the plan-element graph.</small>
+<img src="assets/ciq/gpb-01.avif" alt="Plan element graph">
+<small>The plan element graph: data sources (e.g. Final Bookings Data, Rates, YTD Deals) with <b>Add a plan element</b> — plan elements are the building blocks (credits → blueprint → payout).</small>
+<h3>Choosing and configuring a plan element</h3>
+<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><img src="assets/ciq/gpb-03.avif" alt="Choose a plan element"><small>"Choose a plan element": Plan credits, or a blueprint — Flat rate / Tiered / Conditional — plus Component instance (e.g. "Services").</small></div>
+<div><img src="assets/ciq/gpb-02.avif" alt="Tiered blueprint config"><small>"Configure your tiered blueprint": Quota and Base Rate inputs, an <code>fx</code> button on rate inputs, Tier bands with rates.</small></div>
+</div>
+</div>
+
+<div class="card">
+<h2>3. The formula editor — column Formulas dialog</h2>
+<p>Formulas live on <b>columns</b> in SmartGrid tables. A derived column opens the <b>Formulas</b> dialog; the formula references other columns with <code>{Column Name}</code>.</p>
+<img src="assets/ciq/formula-dialog.webp" alt="CaptivateIQ Formulas dialog">
+<small>Real UI — the <b>Formulas</b> dialog: Variant, Column Name, Description, Data Type, Format, Decimal Places, and the <b>Formula</b> box: <code>{Base Commissions Earned} + {Paid Upfront Bonus} + {Multi-Year Bonus}</code>. Note the <b>Explain Formula</b> button (AI explainer) in the same dialog.</small>
+<h3>Worksheets and source data</h3>
+<img src="assets/ciq/worksheet-src.avif" alt="Source Data worksheet">
+<small>Worksheet view: tabs for Bookings Data / Payments / Overrides; columns are edited with formulas, and results recalculate in real time (SmartGrid's dependency graph).</small>
+<div class="note"><b>How formulas get inserted into plans:</b> you don't paste formulas into a plan — you build <b>derived columns</b> in SmartGrid worksheets/tables. Plan <b>credits</b> map rows to payees, <b>blueprints</b> (flat/tiered/conditional) or component instances compute payout, and they all read those columns. Named <b>Global Attributes</b> and reusable <b>Calculation Components</b> share formulas across plans; the <b>Comp Builder Agent</b> can draft formulas and columns from a text description.</div>
+<p><a class="btn" href="https://www.captivateiq.com/product/automate" target="_blank">Product page (vignettes)</a>
+<a class="btn ghost" href="https://www.captivateiq.com/guided-plan-builder" target="_blank">Guided Plan Builder</a>
+<a class="btn ghost" href="https://www.captivateiq.com/blog/commission-calculation-engine" target="_blank">Calculation engine blog</a>
+<a class="btn ghost" href="https://captivateiq.navattic.com/11r07u2" target="_blank">Public tour (12 steps)</a></p>
+</div>
+
+<div class="card">
+<h2>4. Payout visibility + statements</h2>
+<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><img src="assets/ciq/dashboard.avif" alt="Cap admin dashboard"><small>Admin dashboard: Commission plans, Payouts, Plan documents, View workbooks.</small></div>
+<div><img src="assets/ciq/statement.webp" alt="Payee statement"><small>Payee-facing statement with earnings breakdown and Payout Scenario (what-if) panels.</small></div>
+</div>
+</div>
+
+<div class="card">
+<h2>5. Videos</h2>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=KXlXuObAjh0" target="_blank" style="color:#7dd3fc">Native Plan Document Management — 9:13</a></li>
+<li><a href="https://www.youtube.com/watch?v=II8Eo1BNqqQ" target="_blank" style="color:#7dd3fc">Reusable Calculation Components &amp; Global Attributes — 1:02</a></li>
+<li><a href="https://www.youtube.com/watch?v=L2gQafCg9OY" target="_blank" style="color:#7dd3fc">SmartGrid ELT Engine — 1:01</a></li>
+<li><a href="https://vimeo.com/1199455703" target="_blank" style="color:#7dd3fc">CaptivateIQ Agents — 1:10 (Vimeo)</a></li>
+</ul>
+<small>Sources: captivateiq.com product pages &amp; blog, public Navattic tour c.navattic.com (screenshots), CaptivateIQ YouTube. Formula syntax examples verified from the official Formulas dialog vignette.</small>
+</div>
+
+</main></body></html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enterprise ICM Walkthroughs - Plan Builders & Formula Editors</title>
+<style>
+body{font-family:Inter,system-ui,Arial;margin:0;background:#0b1120;color:#e2e8f0;line-height:1.6}
+header{padding:36px 24px;background:linear-gradient(135deg,#1e293b,#0b1120);border-bottom:1px solid #334155}
+header h1{margin:0;font-size:28px}header p{color:#94a3b8;max-width:900px}
+main{max-width:1000px;margin:0 auto;padding:24px}
+.card{display:block;background:#111c30;border:1px solid #334155;border-radius:12px;padding:20px;margin:18px 0;text-decoration:none;color:inherit}
+.card:hover{border-color:#38bdf8}.card h2{margin:0 0 6px;color:#fff;font-size:20px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:#0ea5e9;color:#fff;border-radius:12px;padding:2px 10px;margin-right:8px}
+.tag.g{background:#10b981}.tag.p{background:#8b5cf6}.tag.o{background:#f59e0b}
+small{color:#94a3b8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+</style></head><body>
+<header>
+<a href="../" style="color:#7dd3fc;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:14px">← Experiments</a>
+<h1>Enterprise ICM — Plan Builder &amp; Formula Editor Walkthroughs</h1>
+<p>Six large, mature incentive compensation platforms. For each: how the plan builder looks and works, and exactly how admin-written formulas/expressions get inserted into plans. Screenshots are real UI from vendor docs, product tours, Trailhead, SAP Learning, Oracle readiness docs, and official videos.</p>
+</header>
+<main>
+<a class="card" href="varicent/index.html">
+<h2><span class="tag g">NO-CODE + AI</span> 1. Varicent</h2>
+<p>Incentives Designer canvas with AI assistant building tool chains (Filter, Case, Change Type), tests + data preview + explain panel; ELT pipes with low-code Formula tool and full function library.</p>
+<small>Source of truth: Varicent product tour MP4s (CDN) + ELT docs + local frames.</small>
+</a>
+<a class="card" href="captivateiq.html">
+<h2><span class="tag g">NO-CODE</span> 2. CaptivateIQ</h2>
+<p>Guided Plan Builder wizard (settings → credits → columns → params → summary), tiered/flat blueprints, credit mapping, and the per-column <b>Formulas</b> dialog with <code>{Column}</code> references and "Explain Formula".</p>
+<small>Sources: CaptivateIQ site vignettes + public Navattic tour stills + blog.</small>
+</a>
+<a class="card" href="xactly.html">
+<h2><span class="tag o">LOW-CODE</span> 3. Xactly Incent</h2>
+<p>Plan Design module: Rules Library, 3-step rule wizard (name/type → conditions → results), Formulas and Rate Tables tabs; rules generate credits/results that plans consume.</p>
+<small>Sources: Xactly official "Building a SPIF" demo frames, admin/rep tour stills, product video.</small>
+</a>
+<a class="card" href="spiff.html">
+<h2><span class="tag g">SALESFORCE-NATIVE</span> 4. Salesforce Spiff</h2>
+<p>Designer: datasheets (line-by-line), worksheets (lump-sum), payout rules pointing at Payout Amount fields, formula bar with function library (<code>tier_payout</code>), and the click-through trace view.</p>
+<small>Sources: Trailhead screenshots (vendor CDN), formula trace stills.</small>
+</a>
+<a class="card" href="sap.html">
+<h2><span class="tag p">FUNCTIONS</span> 5. SAP Commissions</h2>
+<p>Plan Data / Rules Wizard with rule types (Credit, Measurement, Incentive, Commission, Deposit), condition/output expression editors, reusable Functions vs Formulas with Rule Usage, and the Compensate &amp; Pay pipeline.</p>
+<small>Sources: SAP Learning screenshots, SAP Community blogs, SAP Help guides.</small>
+</a>
+<a class="card" href="oracle.html">
+<h2><span class="tag p">SQL-LIKE</span> 6. Oracle Incentive Compensation</h2>
+<p>Plan components wired to measures and incentive formulas; SQL-like reusable Expressions inserted as measure formulas (attainment) or incentive formulas (earnings) or rate-table inputs; predefined PL/SQL functions + AI expression builder.</p>
+<small>Sources: Oracle readiness/using docs screenshots, legacy UI captures, Oracle docs text.</small>
+</a>
+<div class="card">
+<h2>How each product inserts formulas into plans</h2>
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<tr style="text-align:left;color:#7dd3fc"><th style="padding:8px;border-bottom:1px solid #334155">Product</th><th style="padding:8px;border-bottom:1px solid #334155">Plan builder style</th><th style="padding:8px;border-bottom:1px solid #334155">Where the formula lives</th><th style="padding:8px;border-bottom:1px solid #334155">Formula language</th></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #1e293b"><b>Varicent</b></td><td style="padding:8px;border-bottom:1px solid #1e293b">Canvas + AI assistant; tool nodes</td><td style="padding:8px;border-bottom:1px solid #1e293b">Formula tool on ELT pipe; tools configured by forms</td><td style="padding:8px;border-bottom:1px solid #1e293b">Excel-like functions (<code>IF</code>, aggregates, dates), no SQL required</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #1e293b"><b>CaptivateIQ</b></td><td style="padding:8px;border-bottom:1px solid #1e293b">Guided Plan Builder wizard; blueprints</td><td style="padding:8px;border-bottom:1px solid #1e293b">Derived column Formulas dialog in SmartGrid tables</td><td style="padding:8px;border-bottom:1px solid #1e293b"><code>{Column Name}</code> references + formula library; Explain Formula</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #1e293b"><b>Xactly</b></td><td style="padding:8px;border-bottom:1px solid #1e293b">Plan Design tabs; 3-step Rules Wizard</td><td style="padding:8px;border-bottom:1px solid #1e293b">Rule conditions/results (credits); Formulas tab; Rate Tables</td><td style="padding:8px;border-bottom:1px solid #1e293b">Condition grid operators + named formulas + rate-table lookups</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #1e293b"><b>Salesforce Spiff</b></td><td style="padding:8px;border-bottom:1px solid #1e293b">Designer: plans + payout rules</td><td style="padding:8px;border-bottom:1px solid #1e293b">Formula bar on datasheet/worksheet fields; rule's Payout Amount points at it</td><td style="padding:8px;border-bottom:1px solid #1e293b"><code>tier_payout()</code>, <code>sum()</code>, <code>if()</code>, cross-sheet <code>Sheet!Field</code></td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid #1e293b"><b>SAP Commissions</b></td><td style="padding:8px;border-bottom:1px solid #1e293b">Rules Wizard per rule type; pipeline stages</td><td style="padding:8px;border-bottom:1px solid #1e293b">Per-rule expression fields; reusable named Formulas with Rule Usage</td><td style="padding:8px;border-bottom:1px solid #1e293b">Functions (<code>Sum Prior Measurements</code>, <code>Prorate</code>, <code>If Then Else</code>) + Legal Moves editor</td></tr>
+<tr><td style="padding:8px"><b>Oracle ICM</b></td><td style="padding:8px">Plan components: measure + incentive formula + rate table</td><td style="padding:8px">Expressions (Manage Expressions) referenced by measure/incentive formulas</td><td style="padding:8px">SQL-like: <code>SUM(Credit.Credit Amount)</code>, <code>Measure.ITD Output Achieved * RTR</code></td></tr>
+</table>
+</div>
+
+<div class="card" style="border-style:dashed">
+<h2>How to read these</h2>
+<div class="grid">
+<div><h3 style="color:#7dd3fc">No-code layers</h3><p>Canvases, wizards, grids, dropdown conditions. What a comp admin uses for 80% of changes.</p></div>
+<div><h3 style="color:#7dd3fc">Formula/expression layer</h3><p>Where the actual math lives — a per-column dialog, a rule result, a function call, or a SQL-like expression — and how the plan references it.</p></div>
+</div>
+</div>
+</main>
+</body></html>
