@@ -12,7 +12,7 @@ Fast path from a design-export folder:
 tools/publish-page.sh --source <dir> --slug <slug> --title "..." --desc "..."
 ```
 
-The script uses a cached checkout at `~/.cache/akhil3645.github.io` (override with `PUBLISH_REPO_DIR`), so it clones once and pulls after that. It copies the page, appends the `pages.js` entry, runs HTTP smoke checks (200, title, referenced assets; no browser or screenshots), commits, pushes, and waits for the live URL to return 200. Run `tools/publish-page.sh --help` for all options.
+The script uses a cached checkout at `~/.cache/akhil3645.github.io` (override with `PUBLISH_REPO_DIR`), so it clones once and pulls after that. It copies the page files, appends the `pages.js` entry, commits, pushes, then polls the live URL with curl until it returns 200. Run `tools/publish-page.sh --help` for all options.
 
 Manual path (what the script automates):
 
@@ -40,7 +40,7 @@ Manual path (what the script automates):
 ## Slug conventions
 
 - Lowercase kebab-case: letters, digits and hyphens, no leading or trailing hyphen (`a2-block-statements`, `v2-builder-prototype`).
-- Derived from the hub title when `--slug` is omitted; `--random-slug` generates a short random string. Random slugs are fine when no meaningful name exists.
+- Derived from the hub title when `--slug` is omitted, with a random string as fallback. Random slugs are fine when no meaningful name exists.
 - The slug is both the folder name and the public URL. Renaming it later breaks shared links, so pick once and keep it.
 
 ## Conventions
@@ -55,9 +55,9 @@ Manual path (what the script automates):
 
 ## Verification
 
-- Routine publishing is smoke tested by the script over HTTP: page returns 200, title present, and all referenced assets resolve.
-- No browser, screenshots, or pixel-level passes during publishing; the smoke check is HTTP-only. Do a visual or interaction pass only when styling or interactive behavior is what changed, or when the user asks.
-- After pushing, confirm the page is live:
+- Publishing is confirmed by curl: the script polls the live URL until it returns 200.
+- No browser, screenshots, or pixel-level passes during publishing. Do a visual or interaction pass only when styling or interactive behavior is what changed, or when the user asks.
+- To confirm manually:
 
   ```bash
   curl -s -o /dev/null -w "%{http_code}" https://akhil3645.github.io/<folder>/

@@ -18,10 +18,9 @@ tools/publish-page.sh \
 
 The script keeps a cached checkout at `~/.cache/akhil3645.github.io` (override
 with `PUBLISH_REPO_DIR`), so there is no re-clone per publish. It copies the
-page, appends the `pages.js` entry, runs HTTP smoke checks (200, title,
-referenced assets; no browser or screenshots), commits, pushes, and waits for the live URL to return
-`200`. See `tools/publish-page.sh --help` for all options, including
-`--random-slug` for pages that need no meaningful name.
+page files, appends the `pages.js` entry, commits, pushes, and polls the
+live URL with curl until it returns `200`. See `tools/publish-page.sh --help`
+for all options.
 
 Manual steps (what the script automates):
 
@@ -93,9 +92,9 @@ python3 -m http.server 4317 --bind 127.0.0.1
 ```
 
 Open `http://127.0.0.1:4317/my-page/`. Edit HTML/JS and reload—no CSS compilation step.
-Routine publishing is verified by the script's HTTP smoke checks and the live `200` check;
-there is no browser pass in the flow. Add a manual visual or
-interaction pass only when styling or interactive behavior is what changed.
+Publishing is confirmed by the script's curl poll of the live URL; there is no
+browser pass in the flow. Add a manual visual or interaction pass only when
+styling or interactive behavior is what changed.
 
 After pushing, confirm the page is deployed:
 
