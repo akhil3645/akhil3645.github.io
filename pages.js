@@ -41,4 +41,10 @@ const PAGES = [
     url: "v2-builder-prototype/",
     date: "Sep 20, 2026",
   },
+  {
+    title: "Block Presentation A2",
+    desc: "Block statement view for a KPI program · sources, transformations, 51 employee metrics, incentive rules, 9 charts, result metadata and parameters with compact 800px formulas.",
+    url: "a2-block-statements/",
+    date: "Sep 29, 2026",
+  },
 ];

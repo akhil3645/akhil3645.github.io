@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Block Presentation A2</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Poppins',ui-sans-serif,system-ui,sans-serif;color:#09090b;background:#f8f8f8;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+svg{flex:none}
+.ic{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic16{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.f,.kw,.pill,.lb,.mono,.num{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace}
+.f{font-size:12px;line-height:20px;font-weight:500;color:#09090b}
+.ba{color:#0f766e}.dv{color:#6d28d9}.cv{color:#047857}.pv{color:#b45309}.pa{color:#a21caf}.ks{color:#1d4ed8}
+.fn,.wd{font-weight:600;color:#09090b}
+.op,.pu,.ph{color:#71717a}
+.al{color:#09090b}
+.ik{color:#71717a;font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:4px;font-weight:700;vertical-align:top;height:20px}
+
+/* statement: capped at 800px so formulas never run wider */
+.st{max-width:800px}
+.cl{display:grid;grid-template-columns:88px minmax(0,1fr)}
+.kw{font-size:12px;font-weight:700;line-height:20px;color:#52525b;padding-top:2px}
+.ln{min-height:24px;padding:2px 8px}
+.pill{display:inline-block;font-size:12px;font-weight:700;line-height:16px;padding:2px 7px;border-radius:5px;background:#e4e4e9;color:#18181b}
+.tr{position:relative;margin-left:8px;padding-left:18px}
+.tr>.c{position:relative;min-height:24px;padding:2px 8px 2px 10px}
+.tr>.c::before{content:'';position:absolute;left:-11px;top:0;bottom:0;border-left:1.5px solid #c9c9d1}
+.tr>.c:last-child::before{bottom:auto;height:12px}
+.tr>.c::after{content:'';position:absolute;left:-11px;top:12px;width:9px;border-top:1.5px solid #c9c9d1}
+.sel{display:grid;grid-template-columns:minmax(0,max-content) auto minmax(0,1fr)}
+.sr{display:grid;grid-template-columns:subgrid;grid-column:1/-1;align-items:baseline}
+.sr>div{padding:2px 8px}
+.ifg{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;align-items:baseline}
+.ct{display:grid;grid-template-columns:16px max-content max-content;column-gap:24px;margin-left:-8px}
+.ct .r{display:grid;grid-template-columns:subgrid;grid-column:1/-1;align-items:center;min-height:24px;padding:0 8px;border-bottom:1px solid #e7e7ea}
+.ct .r.h{border-bottom:1.5px solid #d4d4d8}
+.ct .r.e{border-bottom:0}
+.lb{font-size:11px;font-weight:700;color:#71717a}
+.num{font-size:11px;color:#71717a}
+
+/* groups */
+.grp{margin-top:32px}
+.gh{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:14px;border-bottom:1px solid #e4e4e7;max-width:800px}
+.tile{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.gt{font-size:14px;font-weight:600}
+.gc{font-size:12px;font-weight:500;color:#71717a}
+
+/* items: the name leads, the kind is a quiet badge at the right edge */
+.item{max-width:800px}
+.item+.item{margin-top:12px;padding-top:12px;border-top:1px solid #ececef}
+.ih{display:flex;align-items:center;gap:8px;height:26px;margin-bottom:4px}
+.it{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:15px;font-weight:700;line-height:22px}
+.its{font-size:15px;font-weight:600;line-height:22px}
+.bd{margin-left:auto;display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 7px;border:1px solid #e4e4e7;border-radius:5px;background:#ffffff;font-size:11px;font-weight:500;color:#52525b;white-space:nowrap}
+.bdg{display:flex;gap:6px;margin-left:auto}
+.bdg .bd{margin-left:0}
+.lbl{font-size:12px;font-weight:600;color:#71717a;margin:16px 0 4px;max-width:800px;display:flex;gap:6px}
+
+/* name | formula rows (variables, charts, rules, parameters) */
+.lr{display:grid;grid-template-columns:216px minmax(0,1fr);column-gap:20px;max-width:800px;padding:7px 0;border-top:1px solid #ececef}
+.lr:first-child{border-top:0}
+.ln2{font-size:13px;font-weight:600;line-height:20px}
+.la{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:11px;font-weight:500;line-height:16px;color:#71717a}
+.lf{display:flex;align-items:flex-start;gap:12px}
+.lf>.f{flex:1;min-width:0}
+
+/* parameter tables: every value shown, in the CASE table's look */
+.pp{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:20px;margin:2px 0 4px;color:#09090b}
+.pt{display:grid;grid-template-columns:minmax(160px,max-content) repeat(3,minmax(128px,max-content));column-gap:32px;max-width:800px}
+.pt .r{display:grid;grid-template-columns:subgrid;grid-column:1/-1;align-items:center;min-height:24px;border-bottom:1px solid #e7e7ea}
+.pt .r.h{align-items:end;padding-bottom:4px;border-bottom:1.5px solid #d4d4d8}
+.pt .r.e{border-bottom:0}
+.pt .n{justify-self:end;text-align:right}
+.pc{font-size:12px;font-weight:600;line-height:18px}
+.pk{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:11px;font-weight:500;line-height:16px;color:#71717a}
+.eye{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#047857;margin-top:2px}
+
+/* shell */
+.nv{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;font-size:13px;font-weight:500;color:#52525b;border-radius:8px}
+.nc{margin-left:auto;font-size:11px;color:#71717a}
+.ra{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;font-size:12px;font-weight:500;color:#52525b;border-radius:6px}
+.ra.on{background:#ebebef;color:#09090b;font-weight:600}
+.ri{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:11px;font-weight:500;line-height:16px;color:#52525b;padding:4px 0 4px 12px}
+.ri.on{color:#09090b;font-weight:700}
+</style>
+</helmet>
+<div style="width:1440px;height:3840px;display:flex;flex-direction:column;background:#f8f8f8;overflow:hidden">
+
+<!-- app top bar -->
+<div style="height:52px;flex:none;background:#ffffff;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
+<div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#0b1220">nansys</div>
+<div style="width:32px;height:32px;border-radius:16px;background:#e5482b;color:#ffffff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">S</div>
+</div>
+
+<div style="flex:1;display:flex;min-height:0">
+
+<!-- app rail -->
+<div style="width:109px;flex:none;background:#0b1220;padding:16px 10px;display:flex;flex-direction:column;gap:10px;color:#ffffff;font-size:12px;font-weight:500;text-align:center">
+<div style="background:#4a2530;border-radius:10px;padding:12px 4px 10px"><div style="width:22px;height:22px;border-radius:6px;background:#ffffff;margin:0 auto 6px"></div>Incentive Programs</div>
+<div style="padding:12px 4px 10px"><div style="width:22px;height:22px;border-radius:6px;background:#ffffff;margin:0 auto 6px"></div>Incentive Workspace</div>
+<div style="padding:12px 4px 10px"><div style="width:22px;height:22px;border-radius:6px;background:#ffffff;margin:0 auto 6px"></div>Reports</div>
+<div style="padding:12px 4px 10px"><div style="width:22px;height:22px;border-radius:6px;background:#ffffff;margin:0 auto 6px"></div>Master Data</div>
+<div style="padding:12px 4px 10px"><div style="width:22px;height:22px;border-radius:6px;background:#ffffff;margin:0 auto 6px"></div>Source Data</div>
+<div style="padding:12px 4px 10px"><div style="width:22px;height:22px;border-radius:6px;background:#ffffff;margin:0 auto 6px"></div>Targets</div>
+</div>
+
+<!-- program sidebar -->
+<div style="width:224px;flex:none;background:#ffffff;border-right:1px solid #e4e4e7">
+<div style="padding:18px 16px 14px;border-bottom:1px solid #e4e4e7">
+<div style="font-size:11px;font-weight:500;color:#e5482b">← Programs</div>
+<div style="font-size:11px;font-weight:600;margin-top:8px">Uttej KPI Program V2</div>
+</div>
+<div style="padding:8px;display:flex;flex-direction:column;gap:2px">
+<div class="nv">Details</div>
+<div class="nv">Time Periods</div>
+<div class="nv">Source Data Types</div>
+<div class="nv">Blocks<span class="nc">1</span></div>
+<div style="padding:6px 0 6px 40px;font-size:11px;font-weight:600;background:#f4f4f5;border-radius:8px;margin-top:2px">KPI Program</div>
+</div>
+</div>
+
+<!-- content -->
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;background:#f8f8f8">
+
+<div style="height:36px;flex:none;padding:0 28px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:#71717a">
+<span>Programs</span><span>/</span><span>Uttej KPI Program V2</span><span>/</span><span style="color:#09090b">KPI Program</span>
+</div>
+<div style="height:48px;flex:none;padding:0 28px;border-top:1px solid #e4e4e7;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px;font-weight:600">KPI Program</span><span class="bd" style="margin-left:0">Volume based</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<button type="button" aria-label="Relaxed view" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#71717a;background:none;border:0;border-radius:8px"><svg class="ic16" viewBox="0 0 24 24"><path d="M12 22v-6"></path><path d="M12 8V2"></path><path d="M4 12H2"></path><path d="M10 12H8"></path><path d="M16 12h-2"></path><path d="M22 12h-2"></path><path d="m15 19-3-3-3 3"></path><path d="m15 5-3 3-3-3"></path></svg></button>
+<a href="#edit" style="height:32px;padding:0 12px;border:1px solid #e4e4e7;border-radius:8px;background:#ffffff;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500"><svg class="ic" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>Edit block</a>
+</div>
+</div>
+
+<div style="flex:1;display:flex;min-height:0">
+
+<!-- ============ MAIN COLUMN ============ -->
+<div style="flex:1;min-width:0;padding:20px 24px 48px 28px">
+
+<!-- SOURCES -->
+<div id="g-sources">
+<div class="gh"><div class="tile" style="background:#ccfbf1;color:#0f766e"><svg class="ic" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></div><span class="gt">Sources</span></div>
+
+<div class="item">
+<div class="ih"><span class="its">Employees</span></div>
+<div class="st">
+<div class="cl"><div class="kw">FROM</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>employees</span> <span class="ik">AS</span> <span class="ph">emp</span></div></div>
+<div class="cl"><div class="kw">WHERE</div><div>
+<div class="ln"><span class="pill">AND</span></div>
+<div class="tr">
+<div class="c f"><span class="al">emp.</span><span class="ba">role_id</span> <span class="wd">IS NOT NULL</span></div>
+<div class="c f"><span class="al">emp.</span><span class="ba">start_date</span> <span class="op">&lt;=</span> <span class="al">program.</span><span class="pv">PROGRAM_END_DATE</span></div>
+</div></div></div>
+<div class="cl"><div class="kw">ELIGIBILITY</div><div class="ln f"><span class="wd">DEFINITION</span></div></div>
+</div>
+</div>
+
+<div class="item">
+<div class="ih"><span class="it">daily_sales_src</span><span class="bd">Block source</span></div>
+<div class="st">
+<div class="cl"><div class="kw">FROM</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>daily_sales</span> <span class="ik">AS</span> <span class="ph">sales</span></div></div>
+<div class="cl"><div class="kw">WHERE</div><div class="ln f"><span class="fn">IS_EARLIEST_DOCUMENT_USER</span> <span class="pu">(</span> <span class="ks">"sales"</span> <span class="pu">)</span></div></div>
+</div>
+</div>
+
+<div class="item">
+<div class="ih"><span class="its">Required record 1</span><span class="bd">Required record</span></div>
+<div class="st">
+<div class="cl"><div class="kw">FROM</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg>snb_targets_configs</span> <span class="ik">AS</span> <span class="ph">target_config</span></div></div>
+<div class="cl"><div class="kw">WHERE</div><div class="ln f"><span class="al">target_config.</span><span class="ba">year</span> <span class="op">=</span> <span class="al">program.</span><span class="pv">PROGRAM_START_DATE</span></div></div>
+<div class="cl"><div class="kw">MESSAGE</div><div class="ln f"><span class="ks">"Targets configuration not found for the year."</span></div></div>
+</div>
+</div>
+</div>
+
+<!-- TRANSFORMATIONS -->
+<div class="grp" id="g-transformations">
+<div class="gh"><div class="tile" style="background:#ede9fe;color:#6d28d9"><svg class="ic" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg></div><span class="gt">Transformations</span><span class="gc">3</span></div>
+
+<div class="item">
+<div class="ih"><span class="it">sales_ytd</span><span class="bd">Aggregation</span></div>
+<div class="st">
+<div class="cl"><div class="kw">FROM</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>daily_sales</span> <span class="ik">AS</span> <span class="ph">sales</span></div></div>
+<div class="cl"><div class="kw">WHERE</div><div>
+<div class="ln"><span class="pill">AND</span></div>
+<div class="tr">
+<div class="c f"><span class="al">sales.</span><span class="ba">posted_date</span> <span class="op">&gt;=</span> <span class="al">program.</span><span class="pv">PROGRAM_START_DATE</span></div>
+<div class="c f"><span class="al">sales.</span><span class="ba">posted_date</span> <span class="op">&lt;=</span> <span class="al">program.</span><span class="pv">TIMELINE_END_DATE</span></div>
+<div class="c f"><span class="fn">IS_EARLIEST_DOCUMENT_USER</span> <span class="pu">(</span> <span class="ks">"sales"</span> <span class="pu">)</span></div>
+<div class="c f"><span class="al">sales.</span><span class="ba">employee_id</span> <span class="wd">IN</span> <span class="fn">IN_SOURCE_VALUES</span> <span class="pu">(</span> <span class="ks">"employees"</span><span class="pu">,</span> <span class="ks">"id"</span> <span class="pu">)</span></div>
+</div></div></div>
+<div class="cl"><div class="kw">GROUP BY</div><div class="ln f"><span class="al">sales.</span><span class="ba">employee_id</span></div></div>
+<div class="cl"><div class="kw">SELECT</div>
+<div class="sel">
+<div class="sr"><div class="f"><span class="al">sales.</span><span class="ba">employee_id</span></div><div class="f ik">AS</div><div class="f"><span class="ph">employee_id</span><span class="pu">,</span></div></div>
+<div class="sr"><div class="f"><span class="fn">SUM</span> <span class="pu">(</span> <span class="al">sales.</span><span class="ba">total_net_sales</span> <span class="pu">)</span> <span class="fn">FILTER</span> <span class="pu">(</span> <span class="wd">WHERE</span> <span class="al">sales.</span><span class="ba">wm_sales_group</span> <span class="wd">IN</span> <span class="pu">[</span> <span class="ks">"Alternatives"</span> <span class="pu">] )</span></div><div class="f ik">AS</div><div class="f"><span class="ph">ns_alternatives_ytd_actual</span><span class="pu">,</span></div></div>
+<div class="sr"><div class="f"><span class="fn">SUM</span> <span class="pu">(</span> <span class="al">sales.</span><span class="ba">sub_sales</span> <span class="pu">)</span></div><div class="f ik">AS</div><div class="f"><span class="ph">sales_ytd_actual</span><span class="pu">,</span></div></div>
+<div class="sr"><div class="f"><span class="fn">SUM</span> <span class="pu">(</span> <span class="al">sales.</span><span class="ba">sub_sales</span> <span class="pu">)</span> <span class="fn">FILTER</span> <span class="pu">(</span> <span class="wd">WHERE</span> <span class="al">sales.</span><span class="ba">posted_date</span> <span class="op">&gt;=</span> <span class="al">program.</span><span class="pv">TIMELINE_START_DATE</span> <span class="pu">)</span></div><div class="f ik">AS</div><div class="f"><span class="ph">sales_month_actual</span><span class="pu">,</span></div></div>
+<div class="sr"><div class="f"><span class="fn">SUM</span> <span class="pu">(</span> <span class="al">sales.</span><span class="ba">total_net_revenue</span> <span class="pu">)</span></div><div class="f ik">AS</div><div class="f"><span class="ph">net_revenue_ytd_actual</span><span class="pu">,</span></div></div>
+<div class="sr"><div class="f"><span class="fn">SUM</span> <span class="pu">(</span> <span class="al">sales.</span><span class="ba">total_net_revenue</span> <span class="pu">)</span> <span class="fn">FILTER</span> <span class="pu">(</span> <span class="wd">WHERE</span> <span class="al">sales.</span><span class="ba">posted_date</span> <span class="op">&gt;=</span> <span class="al">program.</span><span class="pv">TIMELINE_START_DATE</span> <span class="pu">)</span></div><div class="f ik">AS</div><div class="f"><span class="ph">net_revenue_month_actual</span></div></div>
+</div></div>
+</div>
+</div>
+
+<div class="item">
+<div class="ih"><span class="it">targets_ytd</span><span class="bd">Aggregation</span></div>
+<div class="st">
+<div class="cl"><div class="kw">FROM</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg>snb_employee_monthly_targets</span> <span class="ik">AS</span> <span class="ph">targets</span></div></div>
+<div class="cl"><div class="kw">INNER JOIN</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg>snb_targets_configs</span> <span class="ik">AS</span> <span class="ph">target_config</span> <span class="ik">ON</span> <span class="al">target_config.</span><span class="ba">id</span> <span class="op">=</span> <span class="al">targets.</span><span class="ba">targets_config_id</span></div></div>
+<div class="cl"><div class="kw">WHERE</div><div>
+<div class="ln"><span class="pill">AND</span></div>
+<div class="tr">
+<div class="c f"><span class="al">target_config.</span><span class="ba">year</span> <span class="op">=</span> <span class="al">program.</span><span class="pv">PROGRAM_START_DATE</span></div>
+<div class="c f"><span class="al">targets.</span><span class="ba">month_year</span> <span class="op">&gt;=</span> <span class="al">program.</span><span class="pv">PROGRAM_START_DATE</span></div>
+<div class="c f"><span class="al">targets.</span><span class="ba">month_year</span> <span class="op">&lt;=</span> <span class="al">program.</span><span class="pv">TIMELINE_END_DATE</span></div>
+<div class="c f"><span class="al">targets.</span><span class="ba">employee_id</span> <span class="wd">IN</span> <span class="fn">IN_SOURCE_VALUES</span> <span class="pu">(</span> <span class="ks">"employees"</span><span class="pu">,</span> <span class="ks">"id"</span> <span class="pu">)</span></div>
+</div></div></div>
+<div class="cl"><div class="kw">GROUP BY</div><div class="ln f"><span class="al">targets.</span><span class="ba">employee_id</span></div></div>
+<div class="cl"><div class="kw">SELECT</div>
+<div class="sel">
+<div class="sr"><div class="f"><span class="al">targets.</span><span class="ba">employee_id</span></div><div class="f ik">AS</div><div class="f"><span class="ph">employee_id</span><span class="pu">,</span></div></div>
+<div class="sr"><div class="f"><span class="fn">SUM</span> <span class="pu">(</span> <span class="al">targets.</span><span class="ba">target</span> <span class="pu">)</span> <span class="fn">FILTER</span> <span class="pu">(</span> <span class="wd">WHERE</span> <span class="al">targets.</span><span class="ba">target_type</span> <span class="wd">IN</span> <span class="pu">[</span> <span class="ks">"Net Sales Target"</span> <span class="pu">]</span> <span class="wd">AND</span> <span class="al">targets.</span><span class="ba">asset_class</span> <span class="wd">IN</span> <span class="pu">[</span> <span class="ks">"KSA New Products"</span><span class="pu">,</span> <span class="ks">"DIFC New Products"</span> <span class="pu">] )</span></div><div class="f ik">AS</div><div class="f"><span class="ph">ns_alternatives_ytd_target</span></div></div>
+</div></div>
+</div>
+</div>
+
+<div class="item">
+<div class="ih"><span class="it">employee_segments</span><span class="bd">General</span></div>
+<div class="st">
+<div class="cl"><div class="kw">FROM</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>employees</span> <span class="ik">AS</span> <span class="ph">roster</span></div></div>
+<div class="cl"><div class="kw">INNER JOIN</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg>employees</span> <span class="ik">AS</span> <span class="ph">employee</span> <span class="ik">ON</span> <span class="al">employee.</span><span class="ba">id</span> <span class="op">=</span> <span class="al">roster.</span><span class="ba">id</span></div></div>
+<div class="cl"><div class="kw">LEFT JOIN</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg>roles</span> <span class="ik">AS</span> <span class="ph">role</span> <span class="ik">ON</span> <span class="al">role.</span><span class="ba">id</span> <span class="op">=</span> <span class="al">employee.</span><span class="ba">role_id</span></div></div>
+<div class="cl"><div class="kw">SELECT</div>
+<div class="sel">
+<div class="sr"><div class="f"><span class="al">roster.</span><span class="ba">id</span></div><div class="f ik">AS</div><div class="f"><span class="ph">employee_id</span><span class="pu">,</span></div></div>
+<div class="sr"><div class="f"><span class="al">role.</span><span class="ba">finance_segment</span></div><div class="f ik">AS</div><div class="f"><span class="ph">finance_segment</span></div></div>
+</div></div>
+</div>
+</div>
+</div>
+
+<!-- EMPLOYEE METRICS -->
+<div class="grp" id="g-employee-metrics">
+<div class="gh"><div class="tile" style="background:#d1fae5;color:#047857"><svg class="ic" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><span class="gt">Employee Metrics</span><span class="gc">51</span></div>
+
+<div class="item">
+<div class="ih"><span class="its">Joins</span><span class="bd">3 joins</span></div>
+<div class="st">
+<div class="cl"><div class="kw">FROM</div><div class="ln f"><span class="chip ba"><svg class="ic" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>employees</span></div></div>
+<div class="cl"><div class="kw">LEFT JOIN</div><div class="ln f"><span class="chip dv"><svg class="ic" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>sales_ytd</span> <span class="ik">AS</span> <span class="ph">sales_ytd</span> <span class="ik">ON</span> <span class="al">sales_ytd.</span><span class="dv">employee_id</span> <span class="op">=</span> <span class="al">employees.</span><span class="ba">id</span></div></div>
+<div class="cl"><div class="kw">LEFT JOIN</div><div class="ln f"><span class="chip dv"><svg class="ic" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>targets_ytd</span> <span class="ik">AS</span> <span class="ph">targets_ytd</span> <span class="ik">ON</span> <span class="al">targets_ytd.</span><span class="dv">employee_id</span> <span class="op">=</span> <span class="al">employees.</span><span class="ba">id</span></div></div>
+<div class="cl"><div class="kw">LEFT JOIN</div><div class="ln f"><span class="chip dv"><svg class="ic" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>employee_segments</span> <span class="ik">AS</span> <span class="ph">employee_segments</span> <span class="ik">ON</span> <span class="al">employee_segments.</span><span class="dv">employee_id</span> <span class="op">=</span> <span class="al">employees.</span><span class="ba">id</span></div></div>
+</div>
+</div>
+
+<div class="lbl"><span>Variables</span><span style="font-weight:500">51</span></div>
+<div>
+<div class="lr"><div><div class="ln2">NS - Alternatives Weight</div><div class="la">ns_alternatives_weight · number</div></div>
+<div>
+<div class="f"><span class="fn">COALESCE</span><span class="pu">(</span></div>
+<div style="padding-left:16px">
+<div class="f"><span class="fn">LOOKUP_TABLE</span><span class="pu">(</span></div>
+<div style="padding-left:16px">
+<div class="f"><span class="al">parameters.</span><span class="pa">kpi_weights</span><span class="pu">,</span></div>
+<div class="f"><span class="fn">CASE</span></div>
+<div class="ct">
+<div class="r h"><span class="lb"></span><span style="display:flex;gap:6px;align-items:baseline"><span class="f"><span class="al">employee_segments.</span><span class="dv">finance_segment</span></span><span class="f op">=</span></span><span class="lb">THEN</span></div>
+<div class="r"><span class="num">1</span><span class="f ks">"Retail &amp; Affluent"</span><span class="f ks">"affluent"</span></div>
+<div class="r"><span class="num">2</span><span class="f ks">"Private Wealth"</span><span class="f ks">"private_wealth"</span></div>
+<div class="r"><span class="num">3</span><span class="f ks">"Institutional"</span><span class="f ks">"institutional"</span></div>
+<div class="r e"><span class="num"></span><span class="lb">ELSE</span><span class="f ks">"__none__"</span></div>
+</div>
+<div class="f"><span class="ks">"category"</span><span class="pu">,</span> <span class="ks">"Alternatives"</span></div>
+</div>
+<div class="f"><span class="pu">),</span> <span class="ks">0</span></div>
+</div>
+<div class="f"><span class="pu">)</span></div>
+</div></div>
+
+<div class="lr"><div><div class="ln2">NS - Alternatives Actual</div><div class="la">ns_alternatives_month_actual · number</div></div>
+<div class="f"><span class="fn">COALESCE</span><span class="pu">(</span> <span class="al">sales_ytd.</span><span class="dv">ns_alternatives_month_actual</span><span class="pu">,</span> <span class="ks">0</span> <span class="pu">)</span></div></div>
+
+<div class="lr"><div><div class="ln2">NS - Alternatives Target</div><div class="la">ns_alternatives_month_target · number</div></div>
+<div class="f"><span class="fn">COALESCE</span><span class="pu">(</span> <span class="al">targets_ytd.</span><span class="dv">ns_alternatives_month_target</span><span class="pu">,</span> <span class="ks">0</span> <span class="pu">)</span></div></div>
+
+<div class="lr"><div><div class="ln2">NS - Alternatives</div><div class="la">ns_alternatives_month_achievement · number</div></div>
+<div class="ifg">
+<div class="f wd">IF</div><div class="f"><span class="cv">ns_alternatives_month_target</span> <span class="op">=</span> <span class="ks">0</span> <span class="wd">OR</span> <span class="cv">ns_alternatives_month_actual</span> <span class="op">=</span> <span class="ks">0</span></div>
+<div class="f wd">THEN</div><div class="f"><span class="ks">0</span></div>
+<div class="f wd">ELSE</div><div class="f"><span class="fn">TO_DECIMAL</span><span class="pu">((</span> <span class="cv">ns_alternatives_month_actual</span> <span class="op">/</span> <span class="cv">ns_alternatives_month_target</span> <span class="pu">)</span> <span class="op">*</span> <span class="cv">ns_alternatives_weight</span><span class="pu">,</span> <span class="ks">21</span><span class="pu">,</span> <span class="ks">2</span> <span class="pu">)</span></div>
+</div></div>
+
+<div class="lr"><div><div class="ln2">NS - Alternatives Up To Month Actual</div><div class="la">ns_alternatives_ytd_actual · number</div></div>
+<div class="f"><span class="fn">COALESCE</span><span class="pu">(</span> <span class="al">sales_ytd.</span><span class="dv">ns_alternatives_ytd_actual</span><span class="pu">,</span> <span class="ks">0</span> <span class="pu">)</span></div></div>
+
+<div class="lr"><div><div class="ln2">Sales Target</div><div class="la">sales_month_target · number</div></div>
+<div class="f"><span class="fn">COALESCE</span><span class="pu">(</span> <span class="al">targets_ytd.</span><span class="dv">sales_month_target</span><span class="pu">,</span> <span class="ks">0</span> <span class="pu">)</span> <span class="op">*</span> <span class="ks">2</span></div></div>
+
+<div class="lr"><div><div class="ln2">Current Month Final Achievement</div><div class="la">current_month_achievement · number</div><div class="eye"><svg class="ic" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>In report</div></div>
+<div class="f"><span class="fn">TO_DECIMAL</span><span class="pu">(</span> <span class="cv">ns_alternatives_month_achievement</span> <span class="op">+</span> <span class="cv">ns_money_market_month_achievement</span> <span class="op">+</span> <span class="cv">ns_non_money_market_month_achievement</span> <span class="op">+</span> <span class="cv">sales_month_achievement</span> <span class="op">+</span> <span class="cv">net_revenue_month_achievement</span> <span class="op">+</span> <span class="cv">margin_trading_month_achievement</span> <span class="op">+</span> <span class="cv">advisory_month_achievement</span><span class="pu">,</span> <span class="ks">21</span><span class="pu">,</span> <span class="ks">2</span> <span class="pu">)</span></div></div>
+</div>
+</div>
+
+<!-- INCENTIVE RULES -->
+<div class="grp" id="g-incentive-rules">
+<div class="gh"><div class="tile" style="background:#fef3c7;color:#b45309"><svg class="ic" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m9 12 2 2 4-4"></path></svg></div><span class="gt">Incentive Rules</span></div>
+<div>
+<div class="lr"><div class="ln2">Rules</div><div class="f" style="font-family:'Poppins',ui-sans-serif,system-ui,sans-serif;color:#71717a">No rules, so everyone is eligible.</div></div>
+<div class="lr"><div class="ln2">Amount</div><div class="lf"><div class="f"><span class="ks">0</span></div><span class="bd">Formula</span></div></div>
+</div>
+</div>
+
+<!-- CHARTS -->
+<div class="grp" id="g-charts">
+<div class="gh"><div class="tile" style="background:#e0f2fe;color:#0369a1"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg></div><span class="gt">Charts</span><span class="gc">9</span></div>
+<div>
+<div class="lr" style="padding:4px 0"><div class="ln2">NS - Alternatives</div><div class="lf"><div class="f"><span class="cv">ns_alternatives_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">NS - Money Market</div><div class="lf"><div class="f"><span class="cv">ns_money_market_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">NS - Non Money Market</div><div class="lf"><div class="f"><span class="cv">ns_non_money_market_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">Sales</div><div class="lf"><div class="f"><span class="cv">sales_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">Net Revenue</div><div class="lf"><div class="f"><span class="cv">net_revenue_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">Margin Trading</div><div class="lf"><div class="f"><span class="cv">margin_trading_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">Advisory</div><div class="lf"><div class="f"><span class="cv">advisory_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">Current Month Final Achievement</div><div class="lf"><div class="f"><span class="cv">current_month_achievement</span></div><span class="bd">Value</span></div></div>
+<div class="lr" style="padding:4px 0"><div class="ln2">Current Final Achievement</div><div class="lf"><div class="f"><span class="cv">up_to_month_achievement</span></div><span class="bd">Value</span></div></div>
+</div>
+</div>
+
+<!-- RESULT -->
+<div class="grp" id="g-result">
+<div class="gh"><div class="tile" style="background:#fce7f3;color:#a21caf"><svg class="ic" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-1.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98 1.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg></div><span class="gt">Result</span></div>
+<div class="st" style="display:grid;grid-template-columns:118px minmax(0,1fr)">
+<div class="kw">RANK VARIABLE</div><div class="ln f"><span class="cv">current_month_achievement</span></div>
+<div class="kw">METADATA</div>
+<div>
+<div class="ln"><span class="pill">{ }</span></div>
+<div class="tr">
+<div class="c f"><div><span class="al">kpiAchievements</span> <span class="op">:</span> <span class="pill">{ }</span></div>
+<div class="tr" style="margin-left:0">
+<div class="c f"><div><span class="al">upToMonth</span> <span class="op">:</span> <span class="pill">{ }</span></div>
+<div class="tr" style="margin-left:0">
+<div class="c f"><span class="al">achievement</span> <span class="op">:</span> <span class="cv">up_to_month_achievement</span> <span class="fn">ROUND</span> <span class="ks">2</span></div>
+<div class="c f"><div><span class="al">assetTypeData</span> <span class="op">:</span> <span class="pill">[ ]</span></div>
+<div class="tr" style="margin-left:0">
+<div class="c f"><div><span class="pill">{ }</span></div>
+<div class="tr" style="margin-left:0">
+<div class="c f"><span class="al">actual</span> <span class="op">:</span> <span class="cv">ns_alternatives_ytd_actual</span></div>
+<div class="c f"><span class="al">target</span> <span class="op">:</span> <span class="cv">ns_alternatives_ytd_target</span></div>
+<div class="c f"><span class="al">assetType</span> <span class="op">:</span> <span class="ks">"NS - Alternatives"</span></div>
+<div class="c f"><span class="al">achievement</span> <span class="op">:</span> <span class="cv">ns_alternatives_ytd_achievement</span> <span class="fn">ROUND</span> <span class="ks">2</span></div>
+<div class="c f"><span class="al">assetTypeWeight</span> <span class="op">:</span> <span class="cv">ns_alternatives_weight</span> <span class="fn">ROUND</span> <span class="ks">2</span></div>
+</div></div>
+</div></div>
+</div></div>
+</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PARAMETERS -->
+<div class="grp" id="g-parameters">
+<div class="gh"><div class="tile" style="background:#f4f4f5;color:#52525b"><svg class="ic" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></svg></div><span class="gt">Parameters</span><span class="gc">1</span></div>
+<div class="item">
+<div class="ih"><span class="its">KPI Weights</span><span class="la" style="font-size:12px;line-height:22px">kpi_weights</span><span class="bd">Table · 4 columns</span></div>
+<div class="pp"><svg class="ic" viewBox="0 0 24 24"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>All time</div>
+<div class="pt">
+<div class="r h">
+<div><div class="pc">Category</div><div class="pk">category · text</div></div>
+<div class="n"><div class="pc">Retail &amp; Affluent</div><div class="pk">affluent · number</div></div>
+<div class="n"><div class="pc">Private Wealth</div><div class="pk">private_wealth · number</div></div>
+<div class="n"><div class="pc">Institutional</div><div class="pk">institutional · number</div></div>
+</div>
+<div class="r"><div class="f ks">"Sales"</div><div class="f ks n">10</div><div class="f ks n">10</div><div class="f ks n">10</div></div>
+<div class="r"><div class="f ks">"NOR"</div><div class="f ks n">25</div><div class="f ks n">25</div><div class="f ks n">25</div></div>
+<div class="r"><div class="f ks">"Alternatives"</div><div class="f ks n">10</div><div class="f ks n">25</div><div class="f ks n">5</div></div>
+<div class="r"><div class="f ks">"Non Money Market"</div><div class="f ks n">25</div><div class="f ks n">10</div><div class="f ks n">25</div></div>
+<div class="r"><div class="f ks">"Money Market"</div><div class="f ks n">20</div><div class="f ks n">10</div><div class="f ks n">20</div></div>
+<div class="r"><div class="f ks">"Margin Trading"</div><div class="f ks n">10</div><div class="f ks n">10</div><div class="f ks n">0</div></div>
+<div class="r e"><div class="f ks">"Advisory"</div><div class="f ks n">0</div><div class="f ks n">10</div><div class="f ks n">15</div></div>
+</div>
+</div>
+
+<div class="item">
+<div class="ih"><span class="its">Dependent metrics</span></div>
+<div class="f" style="font-family:'Poppins',ui-sans-serif,system-ui,sans-serif;color:#71717a">None. This block doesn't read metrics from other programs.</div>
+</div>
+</div>
+
+</div>
+
+<!-- ============ ON THIS PAGE ============ -->
+<nav aria-label="On this page" style="width:208px;flex:none;padding:20px 20px 0 0">
+<div style="position:sticky;top:16px">
+<div style="font-size:11px;font-weight:600;color:#71717a;margin:0 0 6px 8px">On this page</div>
+<a class="ra on" href="#g-sources"><svg class="ic" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>Sources<span class="nc">3</span></a>
+<div style="margin:2px 0 4px 15px;border-left:1.5px solid #e4e4e7">
+<a class="ri on" href="#g-sources" style="font-family:'Poppins',ui-sans-serif,system-ui,sans-serif;font-size:12px">Employees</a>
+<a class="ri" href="#g-sources">daily_sales_src</a>
+<a class="ri" href="#g-sources" style="font-family:'Poppins',ui-sans-serif,system-ui,sans-serif;font-size:12px">Required record 1</a>
+</div>
+<a class="ra" href="#g-transformations"><svg class="ic" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>Transformations<span class="nc">3</span></a>
+<a class="ra" href="#g-employee-metrics"><svg class="ic" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Employee Metrics<span class="nc">51</span></a>
+<a class="ra" href="#g-incentive-rules"><svg class="ic" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m9 12 2 2 4-4"></path></svg>Incentive Rules</a>
+<div style="height:1px;background:#e4e4e7;margin:6px 8px"></div>
+<a class="ra" href="#g-charts"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>Charts<span class="nc">9</span></a>
+<a class="ra" href="#g-result"><svg class="ic" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-1.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98 1.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>Result</a>
+<a class="ra" href="#g-parameters"><svg class="ic" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></svg>Parameters<span class="nc">1</span></a>
+</div>
+</nav>
+
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3840}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
